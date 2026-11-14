@@ -1,0 +1,201 @@
+; ================================================================
+; GOMOKU - versión 15×15 para CIDcoder-A / CID 201-A
+; Traduccion a LEAL del clasico de BASIC Computer Games
+; CÓMO JUGAR
+;  1. Elige N (tamaño del tablero): 7..15.
+;  2. Cada turno: escribe I + Enter, J + Enter.
+;     Fila y columna en 1..N. Esquina superior izquierda = (1,1).
+;  3. Símbolos:  '.' vacío   'O' tú   'X' la computadora.
+;     Empiezas tú; luego alternan.
+;  4. Objetivo: 5 'O' en línea (horizontal, vertical o diagonal).
+;     El programa no canta la victoria: cuenta tú.
+;  5. Salir: I = -1.
+;  6. Al salir: Q = 1 → nueva partida · Q = 0 → FIN.
+; ================================================================
+; Cómo juega la computadora:
+;   Mira las 8 celdas CONTIGUAS a tu última 'O':
+;
+;     NO   N   NE
+;      O   *   E
+;     SO   S   SE
+;
+;   Si alguna contiene una 'O' tuya, la convierte en 'X' (te la
+;   "come"). Si no hay ninguna, pone su 'X' en la primera casilla
+;   libre, empezando por la siguiente a tu jugada y recorriendo
+;   el tablero en orden lineal (fase 1: T+1..M, fase 2: 1..T-1).
+;
+;   ATENCIÓN: el bloqueo es de UN SOLO PASO. La IA no evalúa
+;   líneas de 2, 3 o 4, ni anticipa jugadas. Puedes ganar en la
+;   distancia si preparas una línea con 5 'O' sin exponer
+;   ninguna 'O' contigua a una casilla por la que vaya a pasar
+;   la IA antes de que completes la línea.
+; ================================================================
+
+		LEAL
+		TITULO GOMOKU
+
+		ENT N I J Q T M X A(225)
+		FLO
+		REF (29)
+
+; ================================================================
+; FASE 1: Pedir tamaño del tablero. Acepta 7 ≤ N ≤ 15.
+; ================================================================
+(1)		TIT TABLERO 7-15?
+		LEC N
+		N - 7 ? SSN (2)				; N < 7 → error
+		N - 16 ? SNN (2)			; N ≥ 16 → error
+		VEA (3)
+
+(2)		TIT ERROR
+		LIN
+		VEA (1)
+
+; ================================================================
+; FASE 2: Inicializar el tablero a cero.
+; ================================================================
+(3)		N : N = M					; M = N² (hasta 225)
+		1 = T
+(4)		CIC
+			0 = A(T)
+		REP (4) T, 1, M
+
+; ================================================================
+; FASE 3: Bucle principal. Pedir jugada, validar y colocar 1.
+; ================================================================
+(5)		TIT JUGADA?
+		LIN
+		LEC I
+		LEC J
+		I + 1 ? SSC (29)			; I == -1 → salir
+		I - 1 ? SSN (27)
+		I - N ? SSP (27)
+		J - 1 ? SSN (27)
+		J - N ? SSP (27)
+		I - 1 = T
+		T : N + J = T
+		A(T) ? SNC (28)
+		1 = A(T)
+
+; ================================================================
+; FASE 4: Bloqueo en las 8 direcciones.
+; ================================================================
+
+; --- Norte: (I-1, J) ⇒ T-N ---
+		I - 1 = X
+		X - 1 ? SSN (6)				; I=1 → borde superior, ir a Sur
+		T - N = X
+		A(X) - 1 ? SSC (13)			; ¿'O' del jugador? → bloquear
+
+; --- Sur: (I+1, J) ⇒ T+N ---
+(6)		I + 1 = X
+		X - N ? SSP (7)				; I=N → borde inferior
+		T + N = X
+		A(X) - 1 ? SSC (13)
+
+; --- Este: (I, J+1) ⇒ T+1 ---
+(7)		J + 1 - N ? SSP (8)			; J=N → borde derecho
+		T + 1 = X
+		A(X) - 1 ? SSC (13)
+
+; --- Oeste: (I, J-1) ⇒ T-1 ---
+(8)		J - 2 ? SSN (9)				; J=1 → borde izquierdo
+		T - 1 = X
+		A(X) - 1 ? SSC (13)
+
+; --- Noroeste: (I-1, J-1) ⇒ T-N-1 ---
+(9)		I - 1 = X
+		X - 1 ? SSN (10)			; I=1
+		J - 2 ? SSN (10)			; J=1
+		T - N - 1 = X
+		A(X) - 1 ? SSC (13)
+
+; --- Noreste: (I-1, J+1) ⇒ T-N+1 ---
+(10)	I - 1 = X
+		X - 1 ? SSN (11)			; I=1
+		J + 1 - N ? SSP (11)		; J=N
+		T - N + 1 = X
+		A(X) - 1 ? SSC (13)
+
+; --- Suroeste: (I+1, J-1) ⇒ T+N-1 ---
+(11)	I + 1 = X
+		X - N ? SSP (12)			; I=N
+		J - 2 ? SSN (12)			; J=1
+		T + N - 1 = X
+		A(X) - 1 ? SSC (13)
+
+; --- Sureste: (I+1, J+1) ⇒ T+N+1 ---
+(12)	I + 1 = X
+		X - N ? SSP (14)			; I=N → borde inferior, reservar
+		J + 1 - N ? SSP (14)		; J=N → borde derecho, reservar
+		T + N + 1 = X
+		A(X) - 1 ? SSC (13)
+		VEA (14)					; ninguna dirección tenía 1 → reservar
+
+; --- bloqueo encontrado ---
+(13)	2 = A(X)
+		VEA (21)					; ir a imprimir
+
+; ================================================================
+; FASE 5: Reserva en dos fases sin tocar la celda T del jugador.
+; ================================================================
+(14)	T + 1 = X
+(15)	X - M ? SSP (17)			; X > M → pasar a fase 2
+		A(X) ? SNC (16)				; ocupada → siguiente
+		2 = A(X)
+		VEA (21)
+(16)	X + 1 = X
+		VEA (15)
+
+(17)	1 = X
+(18)	X - T ? SSN (19)			; X < T → probar
+		VEA (5)						; X == T: tablero lleno, nuevo turno
+(19)	A(X) ? SNC (20)				; ocupada → siguiente
+		2 = A(X)
+		VEA (21)
+(20)	X + 1 = X
+		VEA (18)
+
+; ================================================================
+; FASE 6: Imprimir tablero con símbolos.
+;   . = celda vacía  ·  O = jugador  ·  X = IA
+; ================================================================
+(21)	1 = I
+(22)	CIC
+			1 = J
+(23)		CIC
+				I - 1 = X
+				X : N + J = X
+				A(X) ? SNC (24)		; A(X) != 0 → comprobar 1 vs 2
+				TIT .				; A(X) == 0 → vacío
+				VEA (26)
+(24)			A(X) - 1 ? SNC (25)	; A(X) != 1 → es 2
+				TIT O				; A(X) == 1 → jugador
+				VEA (26)
+(25)			TIT X				; A(X) == 2 → IA
+(26)			ESP 1				; separador entre celdas
+			REP (23) J, 1, N
+			LIN						; fin de fila
+		REP (22) I, 1, N
+		VEA (5)
+
+; ================================================================
+; FASE 7: Errores.
+; ================================================================
+(27)	TIT ILEGAL
+		LIN
+		VEA (5)
+
+(28)	TIT OCUPADA
+		LIN
+		VEA (5)
+
+; ================================================================
+; FASE 8: Salida.
+; ================================================================
+(29)	TIT FIN
+		LIN
+		TIT OTRA 1-SI 0-NO
+		LEC Q
+		Q - 1 ? SSC (1)
+		FIN

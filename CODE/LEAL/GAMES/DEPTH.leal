@@ -1,0 +1,198 @@
+; ================================================================
+; DEPTH CHARGE - traduccion a LEAL del clasico "Depth Charge"
+; (BASIC Computer Games, juego 31).
+;
+; Un submarino se esconde en una rejilla GxGxG.  El jugador tiene
+; N = INT(LOG2(G))+1 cargas.  Tras cada disparo el sonar indica la
+; direccion y si la profundidad es alta, baja o correcta.
+;
+; El BASIC original pide "INPUT X,Y,Z" en una linea; el teletipo
+; de la CID lee un numero por linea, asi que se piden por separado.
+; La pregunta final Y/N se sustituye por 1/0 (LEC solo lee numeros).
+;
+; RND(1) con la LCG habitual:  S = (S:7+3) mod 4093
+;
+; Etiquetas:
+;  (1) dimension            (10) tras este/oeste
+;  (2) N = 1                (11) este
+;  (3) bucle de N           (12) " Y"
+;  (4) nueva partida        (13) fin de la conjuncion
+;  (5) bucle de disparos    (14) profundidad correcta
+;  (6) impacto              (15) demasiado alto
+;  (7) torpedeado           (16) fin de linea del sonar
+;  (8) tras norte/sur       (17) otra partida
+;  (9) norte                (18) despedida
+; ================================================================
+	LEAL
+	TITULO DEPTH
+	ENT G N A B C D X Y Z T W S Q R
+	FLO
+	REF (18)
+
+	12345 = S
+
+; ----------------------------------------------------------------
+(1)	TIT DEPTH CHARGE
+	LIN
+	LIN
+	TIT USTED ES EL CAPITAN DEL DESTRUCTOR USS COMPUTER.
+	LIN
+	TIT UN SUBMARINO ENEMIGO LE ESTA CAUSANDO PROBLEMAS.
+	LIN
+	TIT SU MISION ES DESTRUIRLO.
+	LIN
+	LIN
+	TIT DIMENSION DEL AREA DE BUSQUEDA?
+	ESP 1
+	LEC G
+	LIN
+	G - 2 ? SNN (2)
+	TIT EL MINIMO ES 2.
+	LIN
+	VEA (1)
+
+; --- N = INT(LOG2(G)) + 1 ---
+(2)	1 = N
+	2 = T
+(3)	T - G ? SSP (4)
+	T : 2 = T
+	N + 1 = N
+	VEA (3)
+
+; ----------------------------------------------------------------
+(4)	1 = D
+; --- A, B, C = INT(G*RND(1)) ---
+	S : 7 + 3 = S
+	S / 4093 = Q
+	Q : 4093 = R
+	S - R = S
+	S / G = Q
+	Q : G = R
+	S - R = A
+; ---
+	S : 7 + 3 = S
+	S / 4093 = Q
+	Q : 4093 = R
+	S - R = S
+	S / G = Q
+	Q : G = R
+	S - R = B
+; ---
+	S : 7 + 3 = S
+	S / 4093 = Q
+	Q : 4093 = R
+	S - R = S
+	S / G = Q
+	Q : G = R
+	S - R = C
+
+	TIT TIENE
+	ESP 1
+	PER N
+	ESP 1
+	TIT CARGAS DE PROFUNDIDAD.
+	LIN
+	TIT INDIQUE EL PUNTO CON TRES NUMEROS: X, Y Y Z.
+	LIN
+	LIN
+
+; ----------------------------------------------------------------
+(5)	CIC
+	TIT ENSAYO
+	ESP 1
+	PER D
+	TIT :
+	LIN
+	TIT X?
+	ESP 1
+	LEC X
+	LIN
+	TIT Y?
+	ESP 1
+	LEC Y
+	LIN
+	TIT Z?
+	ESP 1
+	LEC Z
+	LIN
+
+; --- T = |X-A| + |Y-B| + |Z-C| ---
+	X - A = T
+	T EAB = T
+	Y - B = W
+	W EAB = W
+	T + W = T
+	Z - C = W
+	W EAB = W
+	T + W = T
+	T ? SSC (6)
+
+; --- sonar ---
+	TIT SONAR: EL DISPARO FUE
+	Y - B ? SSC (8)
+	Y - B ? SSP (9)
+	ESP 1
+	TIT SUR
+	VEA (8)
+(9)	ESP 1
+	TIT NORTE
+(8)	X - A ? SSC (10)
+	X - A ? SSP (11)
+	ESP 1
+	TIT OESTE
+	VEA (10)
+(11)	ESP 1
+	TIT ESTE
+(10)	X - A ? SNC (12)
+	Y - B ? SSC (13)
+(12)	ESP 1
+	TIT Y
+(13)	Z - C ? SSC (14)
+	Z - C ? SSN (15)
+	ESP 1
+	TIT BAJO.
+	VEA (16)
+(15)	ESP 1
+	TIT ALTO.
+	VEA (16)
+(14)	ESP 1
+	TIT PROFUNDIDAD OK.
+(16)	LIN
+	REP (5) D, 1, N
+
+; ----------------------------------------------------------------
+(7)	TIT EL SUBMARINO LO TORPEDEO. ABANDONE EL BARCO.
+	LIN
+	TIT ESTABA EN
+	ESP 1
+	PER A
+	TIT ,
+	PER B
+	TIT ,
+	PER C
+	LIN
+	VEA (17)
+
+; ----------------------------------------------------------------
+(6)	TIT B O O M. ENCONTRADO EN
+	ESP 1
+	PER D
+	ESP 1
+	TIT INTENTOS.
+	LIN
+	VEA (17)
+
+; ----------------------------------------------------------------
+(17)	TIT OTRA PARTIDA? 1=SI 0=NO
+	ESP 1
+	LEC T
+	LIN
+	T ? SSC (18)
+	VEA (4)
+
+; ----------------------------------------------------------------
+(18)	TIT OK. HASTA PRONTO.
+	LIN
+	ALT
+
+	FIN

@@ -1,0 +1,143 @@
+		LEAL
+		MINI CHECKERS
+		ENT A B C D E F G H I J K L M
+		ENT S(63)
+		FLO
+		REF (50)
+
+		TIT MINI CHECKERS
+		LIN
+
+; ---- Init tablero 8x8 ----
+; S(X:8+Y) con X=0..7, Y=0..7.
+; Solo casillas con (X+Y) impar tienen pieza.
+; X=0..2 -> -1 (computadora/X). X=5..7 -> +1 (jugador/O).
+		0 = I
+(1)		CIC
+			0 = J
+(2)			CIC
+				0 = M
+				I + J = A
+				A / 2 = B
+				B + B = C
+				A - C = A
+				A ? SSC (6)
+				I - 3 = A
+				A ? SSN (4)
+				I - 5 = A
+				A ? SNN (5)
+				VEA (6)
+(4)				-1 = M
+				VEA (6)
+(5)				1 = M
+(6)				I : 8 = A
+				A + J = A
+				M = S(A)
+			REP (2) J, 1, 7
+		REP (1) I, 1, 7
+
+; ---- Bucle principal: imprimir, IA mueve, imprimir, jugador mueve ----
+(10)	VAS (1)
+		VAS (2)
+		VAS (1)
+		VAS (3)
+		VEA (10)
+
+; ---- SUB 1: imprimir tablero ----
+(1)		CRU
+		LIN
+		7 = I
+(20)	CIC
+			0 = J
+(21)		CIC
+				I : 8 = A
+				A + J = A
+				S(A) = M
+				M ? SNC (22)
+				TIT .
+				VEA (23)
+(22)			M + 1 = A
+				A ? SNC (24)
+				TIT X
+				VEA (23)
+(24)			M - 1 = A
+				A ? SNC (23)
+				TIT O
+(23)		REP (21) J, 1, 7
+			LIN
+		REP (20) I, -1' 8
+		FRU (1)
+
+; ---- SUB 2: movimiento IA (primer valido, sin capturas) ----
+; La IA recorre S(0..63); al encontrar una pieza propia (-1) intenta
+; (x+1, y-1) y si falla (x+1, y+1). Al primer destino vacio, mueve.
+(2)		CRU
+		0 = I
+(30)	S(I) = M
+		M + 1 = A
+		A ? SNC (35)
+		I / 8 = A
+		A + A = B
+		B + B = B
+		B + B = B
+		I - B = C
+		A + 1 = D
+		C - 1 = E
+		D - 8 = F
+		F ? SNN (33)
+		E ? SSN (33)
+		D : 8 = F
+		F + E = F
+		S(F) = G
+		G ? SNC (33)
+		0 = G
+		G = S(I)
+		M = S(F)
+		VEA (40)
+(33)	A + 1 = D
+		C + 1 = E
+		D - 8 = F
+		F ? SNN (35)
+		E - 8 = F
+		F ? SNN (35)
+		D : 8 = F
+		F + E = F
+		S(F) = G
+		G ? SNC (35)
+		0 = G
+		G = S(I)
+		M = S(F)
+		VEA (40)
+(35)	I + 1 = I
+		I - 64 = A
+		A ? SSN (30)
+(40)	FRU (2)
+
+; ---- SUB 3: movimiento del jugador (FROM / TO via LEC) ----
+(3)		CRU
+(50)	TIT FROM
+		LEC A
+		LEC B
+		TIT TO
+		LEC C
+		LEC D
+		A : 8 = M
+		M + B = M
+		S(M) = E
+		E ? SSC (50)
+		E - 1 = F
+		F ? SNC (50)
+		C : 8 = M
+		M + D = M
+		S(M) = E
+		E ? SNC (50)
+		A : 8 = M
+		M + B = M
+		S(M) = E
+		0 = F
+		F = S(M)
+		C : 8 = M
+		M + D = M
+		E = S(M)
+		FRU (3)
+		FIN

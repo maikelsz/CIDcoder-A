@@ -1,0 +1,286 @@
+; ================================================================
+; DAMAS (CHECKERS.bas) - traduccion a LEAL (version 2)
+; Traduccion a LEAL del clasico de BASIC Computer Games
+;
+; Tablero 8x8 en S(1..64):
+;   indice = (Y-1):8 + X, con X,Y de 1 a 8.
+;   X = 1..8 de izquierda a derecha.
+;   Y = 1..8 de arriba a abajo.
+;   La computadora (X) empieza arriba; el jugador (O) abajo.
+;
+; Al inicio se elige quien empieza: 1 = usted, 2 = computadora.
+; El BASIC deja desconectadas las rutinas 6500-8800 (validacion) y
+; 14000 (ejecucion de la jugada humana); aqui se integran al flujo.
+; La IA del BASIC (11000/12000) mueve varias piezas por turno por un
+; GOSUB dentro de la evaluacion; aqui la computadora mueve una sola.
+;
+; Etiquetas (consecutivas 1..26):
+; (1)  introduccion e inicializacion
+; (2)  ciclo de limpieza
+; (3)  turno del jugador: origen
+; (4)  origen no es pieza del jugador
+; (5)  destino
+; (6)  destino ocupado
+; (7)  validar y aplicar jugada
+; (8)  continuar a la computadora
+; (9)  turno de la computadora
+; (10) ciclo de busqueda
+; (11) noroeste / noreste
+; (12) suroeste
+; (13) sureste
+; (14) avanzar X/Y
+; (15) la computadora no mueve
+; (16) aplicar jugada de la computadora
+; (17) repetir busqueda
+; (18) imprimir tablero
+; (19) ciclo de impresion
+; (20) pieza X
+; (21) pieza O
+; (22) separador
+; (23) repetir impresion
+; (24) fin
+; (25) contenido de celda
+; (26) elegir quien empieza
+; ================================================================
+
+		LEAL
+		TITULO DAMAS
+		ENT X Y U V T W A B C S(64)
+		FLO
+		REF (26)
+
+; ================================================================
+; FASE 1: Introduccion e inicializacion del tablero
+; ================================================================
+(1)		TIT DAMAS
+		LIN
+		TIT LA COMPUTADORA ES X.
+		LIN
+		TIT USTED ES O.
+		LIN
+		TIT ORIGEN X Y. DESTINO U V.
+		LIN
+		TIT SOLO DIAGONAL, DISTANCIA 1 O 2.
+		LIN
+		TIT DISTANCIA 2: COME LA PIEZA INTERMEDIA.
+		LIN
+		TIT PARA SALIR ESCRIBA -1 EN X.
+		LIN
+		LIN
+		1 = T
+(2)		CIC
+			0 = S(T)
+		REP (2) T, 1, 64
+
+; ================================================================
+; FASE 2: Colocar piezas iniciales
+; ================================================================
+; Computadora (1) - filas 1, 2, 3 (arriba)
+		1 = S(1)
+		1 = S(3)
+		1 = S(5)
+		1 = S(7)
+		1 = S(10)
+		1 = S(12)
+		1 = S(14)
+		1 = S(16)
+		1 = S(17)
+		1 = S(19)
+		1 = S(21)
+		1 = S(23)
+
+; Jugador (2) - filas 6, 7, 8 (abajo)
+		2 = S(42)
+		2 = S(44)
+		2 = S(46)
+		2 = S(48)
+		2 = S(49)
+		2 = S(51)
+		2 = S(53)
+		2 = S(55)
+		2 = S(58)
+		2 = S(60)
+		2 = S(62)
+		2 = S(64)
+
+		VEA (26)				; Elegir quien empieza
+
+; ================================================================
+; FASE 3: Turno del Jugador
+; ================================================================
+(3)		TIT ORIGEN X Y?
+		LIN
+		LEC X
+		X ? SSN (24)				; Salir con X negativo
+		LEC Y
+
+; Validar coordenadas de origen
+		X - 1 ? SSN (3)
+		X - 8 ? SSP (3)
+		Y - 1 ? SSN (3)
+		Y - 8 ? SSP (3)
+
+; Índice lineal (única multiplicación, 1 vez por turno)
+		Y - 1 = T
+		T : 8 + X = T
+
+		S(T) - 2 ? SNC (4)			; Debe ser pieza del jugador
+		VEA (5)
+
+(4)		TIT NO ES TUYA
+		LIN
+		VEA (3)
+
+(5)		TIT DESTINO U V?
+		LIN
+		LEC U
+		LEC V
+
+		U - 1 ? SSN (5)
+		U - 8 ? SSP (5)
+		V - 1 ? SSN (5)
+		V - 8 ? SSP (5)
+
+		V - 1 = W
+		W : 8 + U = W
+		S(W) ? SNC (6)				; Destino debe estar vacío
+		VEA (7)
+
+(6)		TIT OCUPADO
+		LIN
+		VEA (5)
+
+; ================================================================
+; FASE 4: Validar y aplicar movimiento del jugador
+; ================================================================
+(7)		X - U EAB = A
+		Y - V EAB = B
+		A - B ? SNC (3)				; Debe ser diagonal (|dx| = |dy|)
+		A - 1 ? SSN (3)				; No puede quedarse quieto
+		A - 2 ? SSP (3)				; No puede saltar más de 2
+
+		0 = S(T)
+		2 = S(W)
+
+; Si fue salto (distancia 2), comer pieza del medio
+		A - 2 ? SNC (8)
+		X + U = A
+		A / 2 = A
+		Y + V = B
+		B / 2 = B
+		B - 1 = C
+		C : 8 + A = C
+		0 = S(C)
+
+(8)		VEA (9)
+
+; ================================================================
+; FASE 5: Turno de la Computadora (IA)
+; ================================================================
+(9)		1 = Y
+		1 = X
+		1 = T
+(10)	CIC
+			S(T) - 1 ? SNC (14)		; ¿Es pieza de la PC?
+
+; Noroeste (T-9)
+			X - 1 ? SSC (11)
+			Y - 1 ? SSC (11)
+			T - 9 = W
+			S(W) ? SNC (11)
+			VEA (16)
+
+; Noreste (T-7)
+(11)		X - 8 ? SSC (12)
+			Y - 1 ? SSC (12)
+			T - 7 = W
+			S(W) ? SNC (12)
+			VEA (16)
+
+; Suroeste (T+7)
+(12)		X - 1 ? SSC (13)
+			Y - 8 ? SSC (13)
+			T + 7 = W
+			S(W) ? SNC (13)
+			VEA (16)
+
+; Sureste (T+9)
+(13)		X - 8 ? SSC (14)
+			Y - 8 ? SSC (14)
+			T + 9 = W
+			S(W) ? SNC (14)
+			VEA (16)
+
+; Avanzar X/Y sin multiplicar
+(14)		X + 1 = X
+			X - 9 ? SSN (17)
+			1 = X
+			Y + 1 = Y
+
+(17)	REP (10) T, 1, 64
+		VEA (15)					; Sin movimientos → ganó el humano
+
+(16)	0 = S(T)
+		1 = S(W)
+		VEA (18)					; Imprimir tablero actualizado
+
+(15)	TIT PC NO MUEVE
+		LIN
+		TIT GANASTE
+		LIN
+		VEA (24)
+
+; ================================================================
+; FASE 6: Imprimir tablero con coordenadas
+; Header:    1 2 3 4 5 6 7 8
+; Filas:   1 X . X . X . X . 1
+; ...
+; ================================================================
+(18)	1 = C						; Contador de columna (1..8)
+		1 = Y						; Contador de fila (1..8)
+		1 = T						; Índice lineal (1..64)
+; --- Cabecera ---
+		ESP 3
+		TIT 1 2 3 4 5 6 7 8
+		LIN
+(19)	CIC
+; --- Prefijo de fila solo cuando C=1 ---
+			C - 1 ? SNC (25)		; Si C != 1, saltar el prefijo
+			PER Y					; Imprimir número de fila
+			ESP 2					; Un espacio de separación
+(25)								; --- Contenido de la celda ---
+			S(T) ? SNC (20)
+			TIT .					; Vacío
+			VEA (22)
+(20)		S(T) - 1 ? SNC (21)
+			TIT X					; Computadora
+			VEA (22)
+(21)		TIT O					; Jugador
+(22)		ESP 1					; Separador entre celdas
+			C + 1 = C
+			C - 9 ? SSN (23)		; Si C < 9, sin salto de línea
+			ESP 1					; Un espacio de separación			
+			PER Y					; Imprimir número de fila			
+			LIN
+			1 = C
+			Y + 1 = Y				; Siguiente fila
+(23)	REP (19) T, 1, 64
+		ESP 3
+		TIT 1 2 3 4 5 6 7 8
+		LIN
+		VEA (3)						; Volver al turno del jugador
+
+; ================================================================
+; FASE 7: Elegir quien empieza
+; ================================================================
+(26)		TIT QUIEN EMPIEZA?
+		LIN
+		TIT 1 USTED, 2 COMPUTADORA.
+		LIN
+		LEC C
+		C - 1 ? SSN (26)			; Fuera de rango: repite
+		C - 2 ? SSP (26)			; Fuera de rango: repite
+		C - 2 ? SSC (9)			; 2: la computadora empieza
+		VEA (18)					; 1: usted empieza (imprime tablero)
+
+(24)	FIN

@@ -1,0 +1,95 @@
+
+; GOMOKU - Traduccion a LEAL del clasico de BASIC Computer Games
+
+		LEAL
+		TITULO GOMOKU
+		ENT N I J Q T M X A(120)
+		FLO
+		REF (900)
+
+(1)		TIT N 7-10
+		LEC N
+		N - 7 ? SSN (2)
+		N - 11 ? SNN (2)
+		VEA (3)
+(2)		TIT ERROR
+		LIN
+		VEA (1)
+
+(3)		N : N = M
+		1 = T
+(4)		CIC
+			0 = A(T)
+		REP (4) T, 1, M
+
+(10)	TIT JUGADA
+		LEC I
+		LEC J
+		I + 1 ? SSC (900)
+		I - 1 ? SSN (20)
+		I - N ? SSP (20)
+		J - 1 ? SSN (20)
+		J - N ? SSP (20)
+		I - 1 = T
+		T : N + J = T
+		A(T) ? SNC (22)
+		1 = A(T)
+
+; Bloqueo norte: si (I-1, J) tiene un 1, colocar 2 ahi
+		I - 1 = X
+		X - 1 ? SSN (30)
+		T - N = X
+		A(X) - 1 ? SSC (100)
+
+; Bloqueo este: si (I, J+1) tiene un 1, colocar 2 ahi
+		J + 1 - N ? SSP (30)
+		T + 1 = X
+		A(X) - 1 ? SSC (100)
+
+; Reserva: primer hueco vacio (despues de T, luego desde 1)
+(30)	T + 1 = X
+(31)	X - M ? SSP (33)
+		A(X) ? SNC (32)
+		2 = A(X)
+		VEA (50)
+(32)	X + 1 = X
+		VEA (31)
+(33)	1 = X
+(34)	X - T ? SSN (35)
+		VEA (10)
+(35)	A(X) ? SNC (37)
+		2 = A(X)
+		VEA (50)
+(37)	X + 1 = X
+		VEA (34)
+
+(100)	T - N = X
+		2 = A(X)
+		VEA (50)
+
+; Tablero
+(50)	1 = I
+(51)	CIC
+			1 = J
+(52)		CIC
+				I - 1 = X
+				X : N + J = X
+				PER A(X)
+				ESP 1
+			REP (52) J, 1, N
+			LIN
+		REP (51) I, 1, N
+		VEA (10)
+
+(20)	TIT ILEGAL
+		LIN
+		VEA (10)
+(22)	TIT OCUPADA
+		LIN
+		VEA (10)
+(900)	TIT FIN
+		LIN
+		TIT OTRA 1-SI 0-NO
+		LEC Q
+		Q - 1 ? SSC (1)
+		FIN

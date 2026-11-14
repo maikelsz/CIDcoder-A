@@ -1,0 +1,231 @@
+; ================================================================
+; GOMOKU (GO.bas)
+; Traduccion a LEAL del clasico de BASIC Computer Games
+;
+; Tablero N x N, N entre 7 y 19. Una ficha por turno.
+; Gana quien alinee 5 en raya (horizontal, vertical o diagonal).
+; Jugador: 1.  Computadora: 2.
+;
+; El tablero A es lineal, en orden de filas. Para evitar las
+; multiplicaciones (muy lentas en el runtime), se construye una
+; tabla O(0..N) con el desplazamiento de cada fila:
+;   O(0)=0, O(I)=O(I-1)+N
+; y el indice de (X,Y) es T = O(X-1)+Y.
+;
+; RND(1) se reproduce con una LCG:
+;   R = (R:7+3) mod 4093
+;   valor = (R mod N) + 1
+;
+; Se conserva la IA del BASIC: si hay una ficha del jugador en
+; una casilla vecina, la PC escribe 2 sobre ella ("IA come").
+;
+; Etiquetas (consecutivas 1..22):
+; (1)  pedir tamano del tablero
+; (2)  error de tamano
+; (3)  preparar inicializacion (O(0)=0, I=1, T=1)
+; (4)  inicializar una fila (O(I), J=1)
+; (5)  limpiar una celda
+; (6)  turno del jugador
+; (7)  jugada ilegal
+; (8)  casilla ocupada
+; (9)  bucle E de la PC (inicio)
+; (10) bucle F de la PC (inicio)
+; (11) cuerpo del barrido de vecinos
+; (12) siguiente F / siguiente E
+; (13) jugada aleatoria de la PC
+; (14) colocar ficha de la PC
+; (15) imprimir tablero (subrutina)
+; (16) fila del tablero
+; (17) columna del tablero
+; (18) validar movimiento (subrutina)
+; (19) movimiento invalido
+; (20) retorno de validacion
+; (21) fin / otra vez
+; (22) indice lineal T = O(X-1)+Y (subrutina)
+; ================================================================
+
+		LEAL
+		TITULO GOMOKU
+		ENT A(361) O(20) N I J X Y E F L Q T S R K
+		REF (22)
+
+		TIT BIENVENIDO A GOMOKU.
+		LIN
+		TIT TABLERO N X N. UNA FICHA POR TURNO.
+		LIN
+		TIT GANA ALINEANDO 5 EN RAYA
+		LIN
+		TIT (HORIZ, VERT, DIAG).
+		LIN
+		TIT TU FICHA: '1'. PC: '2'.
+		LIN
+		TIT EL PC NO CONTROLA QUIEN GANA.
+		LIN
+		TIT PARA SALIR: '-1,-1'
+		LIN
+		12345 = R
+
+; ================================================================
+; TAMANO DEL TABLERO (BASIC 110-121)
+; ================================================================
+(1)	TIT TAMANO TABLERO (7-19)
+		LEC N
+		N - 7 ? SSN (2)
+		N - 20 ? SSN (3)
+(2)	TIT ERROR: DEBE SER ENTRE 7 Y 19.
+		LIN
+		VEA (1)
+
+; ================================================================
+; INICIALIZAR TABLERO (BASIC 210-214)
+; ================================================================
+(3)	0 = O(0)
+		1 = I
+		1 = T
+(4)	I - 1 = K
+		O(K) + N = S
+		S = O(I)
+		1 = J
+(5)	0 = A(T)
+		T + 1 = T
+		J + 1 = J
+		J - N - 1 ? SSN (5)
+		I + 1 = I
+		I - N - 1 ? SSN (4)
+
+; ================================================================
+; PRESENTACION DEL TURNO (BASIC 300-301)
+; ================================================================
+		TIT EMPIEZAS TU...
+		LIN
+		LIN
+
+; ================================================================
+; TURNO DEL JUGADOR (BASIC 310-440)
+; ================================================================
+(6)	TIT TU JUGADA (I,J)
+		LIN
+		LEC I
+		LEC J
+		I + 1 ? SSC (21)
+		I = X
+		J = Y
+		VAS (18)
+		L ? SNC (7)
+		VAS (22)
+		A(T) ? SNC (8)
+		1 = A(T)
+		VEA (9)
+
+; ================================================================
+; MENSAJES DE JUGADA (BASIC 340-421)
+; ================================================================
+(7)	TIT ILEGAL. REPITE.
+		LIN
+		VEA (6)
+(8)	TIT OCUPADA. REPITE.
+		LIN
+		VEA (6)
+
+; ================================================================
+; PC: BUSCAR VECINO CON FICHA DEL JUGADOR (BASIC 500-591)
+; ================================================================
+(9)	-1 = E
+(10)	-1 = F
+(11)	E + F = T
+		E : F = S
+		T - S ? SSC (12)
+		I + E = X
+		J + F = Y
+		VAS (18)
+		L ? SNC (12)
+		VAS (22)
+		A(T) - 1 ? SSC (14)
+(12)	F + 1 = F
+		F - 2 ? SSN (11)
+		E + 1 = E
+		E - 2 ? SSN (10)
+
+; ================================================================
+; PC: JUGADA ALEATORIA (BASIC 600-613)
+; ================================================================
+(13)	R : 7 + 3 = R
+		R / 4093 = S
+		S : 4093 = S
+		R - S = R
+		R / N = S
+		S : N = S
+		R - S + 1 = X
+		R : 7 + 3 = R
+		R / 4093 = S
+		S : 4093 = S
+		R - S = R
+		R / N = S
+		S : N = S
+		R - S + 1 = Y
+		VAS (18)
+		L ? SNC (13)
+		VAS (22)
+		A(T) ? SNC (13)
+
+; ================================================================
+; PC: COLOCAR FICHA E IMPRIMIR (BASIC 660-662)
+; ================================================================
+(14)	2 = A(T)
+		VAS (15)
+		VEA (6)
+
+; ================================================================
+; IMPRIMIR TABLERO (BASIC 810-844)
+; ================================================================
+(15)	CRU
+		1 = T
+		1 = I
+(16)	1 = J
+(17)	PER A(T)
+		ESP 1
+		T + 1 = T
+		J + 1 = J
+		J - N - 1 ? SSN (17)
+		LIN
+		I + 1 = I
+		I - N - 1 ? SSN (16)
+		LIN
+		FRU (15)
+
+; ================================================================
+; VALIDAR MOVIMIENTO (BASIC 910-971)
+; Devuelve L=0 si es valido, L=1 si esta fuera del tablero.
+; ================================================================
+(18)	CRU
+		0 = L
+		X - 1 ? SSN (19)
+		X - N ? SSP (19)
+		Y - 1 ? SSN (19)
+		Y - N ? SSP (19)
+		VEA (20)
+(19)	1 = L
+(20)	FRU (18)
+
+; ================================================================
+; FIN / OTRA VEZ (BASIC 980-999)
+; ================================================================
+(21)	TIT GRACIAS POR JUGAR.
+		LIN
+		TIT OTRA VEZ (1=SI, 0=NO)
+		LIN
+		LEC Q
+		Q - 1 ? SSC (1)
+		ALT
+
+; ================================================================
+; INDICE LINEAL (subrutina)
+; Entrada: X, Y.  Salida: T = O(X-1)+Y
+; ================================================================
+(22)	CRU
+		X - 1 = K
+		O(K) = T
+		T + Y = T
+		FRU (22)
+
+		FIN

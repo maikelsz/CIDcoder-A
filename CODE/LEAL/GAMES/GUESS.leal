@@ -1,0 +1,126 @@
+; ================================================================
+; GUESS - traduccion a LEAL del clasico "Guess" (BASIC Computer
+; Games, juego 41).
+;
+; El BASIC original usa L1=INT(LOG(L)/LOG(2))+1 para calcular el
+; numero optimo de intentos.  LEAL no tiene LOG implementado, asi
+; que se cuenta cuantas veces hay que duplicar 2 para pasar de L.
+;
+; RND(1) se reproduce con la misma LCG que 23MATCHES:
+;   X = (X:7+3) mod 4093 ;  M = X mod L + 1
+;
+; Etiquetas:
+;  (1) cabecera y limite     (7) demasiado bajo
+;  (2) calculo de V (optimo) (8) "MUY"
+;  (3) nueva ronda           (9) demasiado alto
+;  (4) leer intento         (10) "BIEN."
+;  (5) intento <= 0         (11) cinco lineas en blanco
+;  (6) acierto              (12) "DEBIO ACERTAR..."
+; ================================================================
+	LEAL
+	TITULO GUESS
+	ENT L N M G I T X Q R V
+	FLO
+	REF (12)
+
+	12345 = X
+
+; ----------------------------------------------------------------
+(1)	TIT JUEGO DE ADIVINAR UN NUMERO
+	LIN
+	TIT PIENSO UN NUMERO ENTRE 1 Y EL LIMITE QUE USTED QUIERA.
+	LIN
+	TIT LUEGO USTED DEBE ADIVINARLO.
+	LIN
+	LIN
+	TIT LIMITE?
+	ESP 1
+	LEC L
+	LIN
+	L ? SNP (1)
+
+; --- V = INT(LOG2(L)) + 1, sin logaritmos ---
+	1 = V
+	2 = T
+(2)	T - L ? SSP (3)
+	T : 2 = T
+	V + 1 = V
+	VEA (2)
+
+; ----------------------------------------------------------------
+(3)	TIT PIENSO UN NUMERO ENTRE 1 Y
+	ESP 1
+	PER L
+	LIN
+	1 = G
+	TIT AHORA TRATE DE ADIVINARLO.
+	LIN
+; --- M = INT(L*RND(1)) + 1 ---
+	X : 7 + 3 = X
+	X / 4093 = Q
+	Q : 4093 = T
+	X - T = X
+	X / L = Q
+	Q : L = T
+	X - T = X
+	X + 1 = M
+
+; ----------------------------------------------------------------
+(4)	TIT SU INTENTO?
+	ESP 1
+	LEC N
+	LIN
+	N ? SNP (5)
+	N - M ? SSC (6)
+	G + 1 = G
+	N - M ? SSP (9)
+	VEA (7)
+
+(7)	TIT MUY BAJO. PRUEBE UN NUMERO MAYOR.
+	LIN
+	VEA (4)
+
+(9)	TIT MUY ALTO. PRUEBE UN NUMERO MENOR.
+	LIN
+	VEA (4)
+
+; ----------------------------------------------------------------
+(6)	TIT ACERTO! LO HIZO EN
+	ESP 1
+	PER G
+	ESP 1
+	TIT INTENTOS.
+	LIN
+	V - G ? SSC (10)
+	V - G ? SSP (8)
+	VEA (12)
+
+(8)	TIT MUY
+	ESP 1
+	VEA (10)
+
+(10)	TIT BIEN.
+	VEA (11)
+
+(11)	LIN
+	LIN
+	LIN
+	LIN
+	LIN
+	VEA (3)
+
+(12)	TIT DEBIO ACERTAR EN SOLO
+	ESP 1
+	PER V
+	LIN
+	VEA (10)
+
+; ----------------------------------------------------------------
+(5)	LIN
+	LIN
+	LIN
+	LIN
+	LIN
+	VEA (1)
+
+	FIN

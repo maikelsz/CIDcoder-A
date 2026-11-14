@@ -1,0 +1,138 @@
+; ================================================================
+; HURKLE - traduccion a LEAL del clasico "Hurkle" (BASIC Computer
+; Games, juego 51).
+;
+; Un hurkle se esconde en una cuadricula de 10x10.  Tras cada
+; intento el programa indica la direccion aproximada.  El BASIC
+; original pide "INPUT X,Y" en una linea; el teletipo de la CID
+; lee un numero por linea, asi que se piden X e Y por separado.
+;
+; RND(1) con la LCG habitual:  S = (S:7+3) mod 4093
+;
+; Etiquetas:
+;  (1) presentacion          (7) norte
+;  (2) nueva partida         (8) tras norte/sur
+;  (3) bucle de intentos     (9) tras este/oeste / fin de linea
+;  (4) se agotaron los tries (10) este
+;  (5) encontrado            (11) otra partida
+;  (6) sin desplazamiento vertical
+; ================================================================
+	LEAL
+	TITULO HURKLE
+	ENT G N A B X Y K D E S Q R T
+	FLO
+	REF (11)
+
+	12345 = S
+
+; ----------------------------------------------------------------
+(1)	TIT HURKLE
+	LIN
+	TIT UN HURKLE SE ESCONDE EN UNA CUADRICULA DE 10 POR 10.
+	LIN
+	TIT HOMEBASE ES EL PUNTO 0,0 EN LA ESQUINA SUROESTE.
+	LIN
+	TIT CADA PUNTO SE DA CON DOS ENTEROS: X Y DESPUES Y.
+	LIN
+	TIT EL PRIMERO ES LA POSICION HORIZONTAL.
+	LIN
+	TIT TIENE 5 INTENTOS. TRAS CADA UNO LE DIRE LA DIRECCION.
+	LIN
+	TIT ESCRIBA X E Y EN LINEAS SEPARADAS.
+	LIN
+	LIN
+
+; ----------------------------------------------------------------
+(2)	5 = N
+	10 = G
+; --- A = INT(10*RND(1)) ---
+	S : 7 + 3 = S
+	S / 4093 = Q
+	Q : 4093 = R
+	S - R = S
+	S / 10 = Q
+	Q : 10 = R
+	S - R = A
+; --- B = INT(10*RND(1)) ---
+	S : 7 + 3 = S
+	S / 4093 = Q
+	Q : 4093 = R
+	S - R = S
+	S / 10 = Q
+	Q : 10 = R
+	S - R = B
+
+	1 = K
+
+; ----------------------------------------------------------------
+(3)	CIC
+	TIT INTENTO
+	ESP 1
+	PER K
+	TIT :
+	LIN
+	TIT X?
+	ESP 1
+	LEC X
+	LIN
+	TIT Y?
+	ESP 1
+	LEC Y
+	LIN
+
+; --- D = |X-A|, E = |Y-B| ---
+	X - A = D
+	D EAB = D
+	Y - B = E
+	E EAB = E
+	D + E ? SSC (5)
+
+; --- direccion ---
+	TIT GO
+	Y - B ? SSC (6)
+	Y - B ? SSN (7)
+	ESP 1
+	TIT SUR
+	VEA (6)
+(7)	ESP 1
+	TIT NORTE
+(6)	X - A ? SSC (9)
+	X - A ? SSN (10)
+	ESP 1
+	TIT OESTE
+	VEA (9)
+(10)	ESP 1
+	TIT ESTE
+(9)	LIN
+	REP (3) K, 1, N
+
+; ----------------------------------------------------------------
+(4)	TIT LO SIENTO. ESOS FUERON
+	ESP 1
+	PER N
+	ESP 1
+	TIT INTENTOS.
+	LIN
+	TIT EL HURKLE ESTA EN
+	ESP 1
+	PER A
+	TIT ,
+	PER B
+	LIN
+	VEA (11)
+
+; ----------------------------------------------------------------
+(5)	TIT LO ENCONTRO EN
+	ESP 1
+	PER K
+	ESP 1
+	TIT INTENTOS.
+	LIN
+	VEA (11)
+
+; ----------------------------------------------------------------
+(11)	TIT JUGUEMOS OTRA VEZ. EL HURKLE SE ESCONDE.
+	LIN
+	VEA (2)
+
+	FIN

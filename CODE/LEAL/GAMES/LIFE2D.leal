@@ -1,0 +1,172 @@
+; ================================================================
+; GAME OF LIFE (Clark Baker 1972) 
+; REJILLA DINÁMICA CON COBERTURA ALEATORIA (VERSIÓN FINAL)
+; ================================================================
+		LEAL
+		TITULO LIFE
+		ENT X Y S U C V W B D T I G M O F H Q R P K A(625)
+		FLO
+		REF (30)
+
+; --- Entrada de dimensiones por el usuario ---
+(1)		TIT FILAS 10-25:
+		LEC F
+		F - 10 ? SSN (1)									; Si F < 10, error
+		F - 26 ? SNN (1)									; Si F > 25, error
+(2)		TIT COLUMNAS 10-25:
+		LEC H
+		H - 10 ? SSN (2)									; Si H < 10, error
+		H - 26 ? SNN (2)									; Si H > 25, error
+
+; --- Entrada de la cobertura inicial ---
+(29)	TIT COBERTURA 1-99:
+		LEC P
+		P ? SSN (29)										; Si P <= 0, error
+		P - 100 ? SNN (29)									; Si P >= 100, error
+
+; Calcular total de celdas y umbral de probabilidad (K)
+		F : H = Q
+		P : 4093 / 100 = K
+
+		TIT INICIALIZANDO POBLACION ALEATORIA...
+		LIN
+		
+; --- Inicialización del tablero a cero ---
+		1 = T
+(3)		CIC
+			0 = A(T)
+		REP (3) T, 1, Q
+
+; --- Patrón Inicial: Sopa Aleatoria usando LCG ---
+		12345 = R
+		0 = I
+		1 = T
+(4)		CIC
+; LCG: R = (R : 7 + 3) mod 4093
+			R : 7 + 3 = R
+			R / 4093 = S
+			S : 4093 = S
+			R - S = R
+    
+; Si R < K (umbral calculado), la célula vive
+			R - K ? SNN (5)
+			1 = A(T)
+			I + 1 = I
+(5)		REP (4) T, 1, Q
+
+; --- Límites iniciales de la ventana de dibujo ---
+		0 = V
+		F - 1 = W
+		0 = B
+		H - 1 = D
+		0 = G
+		VEA (22)
+
+; ================================================================
+; BUCLE PRINCIPAL
+; ================================================================
+(6)		TIT GENERACION:
+		PER G
+		ESP 1
+		TIT POBLACION:
+		PER I
+		LIN
+		LIN
+		TIT GENERANDO...
+		LIN 
+		LIN
+
+		0 = I
+; Expandir límites de la ventana de dibujo
+		V - 1 = V
+		W + 1 = W
+		B - 1 = B
+		D + 1 = D
+
+; --- Asegurar que no salimos de los bordes físicos (0 a F-1, 0 a H-1) ---
+		V ? SSN (7)
+		VEA (8)
+(7)		0 = V
+(8)		W - F ? SSN (9)
+		F - 1 = W
+(9)		B ? SSN (10)
+		VEA (11)
+(10)	0 = B
+(11)	D - H ? SSN (12)
+		H - 1 = D
+(12)	
+
+; --- Cálculo de la nueva generación ---
+		V = X
+(13)	CIC
+			B = Y
+(14)		CIC
+; Contar vecinos (C)
+				0 = C
+				X - 1 = S
+				X + 1 = M
+(15)			CIC
+; Verificar bordes del tablero para vecinos
+					S ? SSN (18)
+					S - F ? SNN (18)
+					Y - 1 = U
+					Y + 1 = O
+(16)				CIC
+						U ? SSN (17)
+						U - H ? SNN (17)
+						S : H + U = T
+						
+; *** CORRECCIÓN: CONTAR VIVAS (1) Y MURIENDO (2) ***
+						A(T) ? SSC (17)						; Si es 0 (muerta), no es vecino
+						A(T) - 3 ? SSC (17)					; Si es 3 (recién nacida), no cuenta
+						C + 1 = C							; Si es 1 o 2, cuenta como vecino
+						
+(17)				REP (16) U, 1, O
+(18)			REP (15) S, 1, M
+
+; --- Aplicar reglas ---
+				X : H + Y = T
+				A(T) ? SNC (19)								; Si está viva, ir a (19)
+            
+; Nace (muerta con 3 vecinos)
+				C - 3 ? SNC (21)
+				3 = A(T)
+				I + 1 = I
+				VEA (21)
+            
+(19)														; Sobrevive o muere
+				C - 2 ? SSN (20)							; Si C < 2, muere
+				C - 3 ? SSP (20)							; Si C > 3, muere
+				I + 1 = I									; Si C == 2 o 3, sobrevive
+				VEA (21)
+(20)			2 = A(T)									; Marcar como muerta (estado 2)
+(21)			
+			REP (14) Y, 1, D
+		REP (13) X, 1, W
+
+; ============================================================
+; IMPRIMIR Y ACTUALIZAR ESTADOS (USANDO X E Y)
+; ============================================================
+		V = X												; Inicializar X en V
+(22)	CIC
+			B = Y											; Inicializar Y en B
+(23)		CIC
+				X : H + Y = T
+				A(T) - 1 ? SSC (24)							; Si es 1, imprimir O
+				A(T) - 3 ? SNC (25)							; Si NO es 3, imprimir .
+(24)			TIT O
+				ESP 1
+				VEA (26)
+(25)			TIT "."
+				ESP 1
+(26)			A(T) - 3 ? SNC (27)							; Si es 3 (nació), cambiar a 1
+				1 = A(T)
+(27)			A(T) - 2 ? SNC (28)							; Si es 2 (murió), cambiar a 0
+				0 = A(T)
+(28)		REP (23) Y, 1, D
+			LIN
+		REP (22) X, 1, W
+		G + 1 = G
+		VEA (6)
+
+		FIN

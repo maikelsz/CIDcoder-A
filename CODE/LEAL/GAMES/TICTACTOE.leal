@@ -1,0 +1,302 @@
+; ================================================================
+; TRES EN LINEA
+; Traduccion a LEAL del clasico de BASIC Computer Games
+;
+; Correspondencia con el BASIC original:
+; A(1..9)  = 2,3,4,9,1,5,8,7,6   (posicion de jugada -> celda)
+; C(1..24) = los 8 triples ganadores, en indices de celda
+; F(1..9)  = 0,1,-1,1,-1,1,-1,1,-1
+; B(1..9)  = tablero: 0 vacio, 1 computadora ('O'), -1 jugador ('X')
+; D(1..24) = estado de cada triple (suma de sus tres celdas)
+;
+; Subrutinas:
+; (27) colocar ficha B(H)=B(0) y actualizar D (BASIC 111-116)
+; (30) comprobar tablero lleno / imprimir  (BASIC 117-136 + 200/210)
+; Devuelve T=1 si el tablero esta lleno (hay que ir a EMPATE),
+; T=0 si imprimio el tablero.
+; ================================================================
+
+		LEAL
+		TITULO TICTACTOE
+		ENT A(9) B(9) C(24) D(24) F(9) G H I M T
+		FLO
+		REF (38)
+
+; ================================================================
+; FASE 1: inicializar los datos
+; ================================================================
+		2 = A(1)
+		3 = A(2)
+		4 = A(3)
+		9 = A(4)
+		1 = A(5)
+		5 = A(6)
+		8 = A(7)
+		7 = A(8)
+		6 = A(9)
+
+		2 = C(1)
+		3 = C(2)
+		4 = C(3)
+		9 = C(4)
+		1 = C(5)
+		5 = C(6)
+		8 = C(7)
+		7 = C(8)
+		6 = C(9)
+		2 = C(10)
+		9 = C(11)
+		8 = C(12)
+		3 = C(13)
+		1 = C(14)
+		7 = C(15)
+		4 = C(16)
+		5 = C(17)
+		6 = C(18)
+		2 = C(19)
+		1 = C(20)
+		6 = C(21)
+		4 = C(22)
+		1 = C(23)
+		8 = C(24)
+
+		0 = F(1)
+		1 = F(2)
+		-1 = F(3)
+		1 = F(4)
+		-1 = F(5)
+		1 = F(6)
+		-1 = F(7)
+		1 = F(8)
+		-1 = F(9)
+
+; ================================================================
+; FASE 2: presentacion
+; ================================================================
+		TIT TRES EN LINEA
+		LIN
+		TIT LAS POSICIONES DE JUEGO SON:
+		LIN
+		TIT 1 2 3
+		LIN
+		TIT 4 5 6
+		LIN
+		TIT 7 8 9
+		LIN
+
+; ================================================================
+; FASE 3: inicializacion de partida
+; B(0) guarda la ficha en curso (-1 jugador / +1 computadora);
+; D(0) es la bandera E (la computadora ya jugo alguna vez).
+; ================================================================
+(1)		0 = B(0)
+		0 = D(0)
+		0 = F(0)
+		2 = G
+		1 = I
+(2)		CIC
+			0 = B(I)
+		REP (2) I, 1, 9
+		1 = I
+(3)		CIC
+			0 = D(I)
+		REP (3) I, 1, 24
+
+; ================================================================
+; FASE 4: comienzo de partida
+; ================================================================
+		LIN
+		TIT --COMIENZA EL JUEGO--
+		LIN
+		TIT USTED SERA 'X', YO SERE 'O'
+		LIN
+		TIT ESCRIBA 0 SI QUIERE QUE YO EMPIECE:
+		LEC I
+		I ? SSC (6)
+		VEA (4)
+
+; ================================================================
+; FASE 5: jugada del jugador
+; ================================================================
+(4)		-1 = B(0)
+		TIT SU JUGADA:
+		LEC I
+		LIN
+		I EAB = H
+		H - I ? SNC (4)
+		H - 1 ? SSN (4)
+		H - 9 ? SSP (4)
+		A(H) = H
+		B(H) ? SNC (4)
+		G - 2 ? SNC (5)
+		F(H) = G
+(5)		VAS (27)
+
+; ================================================================
+; FASE 6: comprobaciones de victoria/bloqueo
+; Las tres pasadas son independientes y en este orden:
+; -3 = gano el jugador, +2 = "YO GANO", -2 = hay que bloquear.
+; ================================================================
+(6)		1 = B(0)
+		1 = I
+(7)		CIC
+			D(I) = T
+			I + 1 = M
+			D(M) + T = T
+			M + 1 = M
+			D(M) + T = T
+			T + 3 ? SSC (24)
+		REP (7) I, 3, 22
+
+		1 = I
+(8)		CIC
+			D(I) = T
+			I + 1 = M
+			D(M) + T = T
+			M + 1 = M
+			D(M) + T = T
+			T - 2 ? SSC (18)
+		REP (8) I, 3, 22
+
+		0 = F(0)
+		1 = I
+(9)		CIC
+			D(I) = T
+			I + 1 = M
+			D(M) + T = T
+			M + 1 = M
+			D(M) + T = T
+			T + 2 ? SSC (19)
+		REP (9) I, 3, 22
+
+; ================================================================
+; FASE 7: estrategia de la computadora
+; ================================================================
+(10)	D(0) - 1 ? SSC (11)
+		G + 1 ? SSC (12)
+(11)	B(1) ? SNC (12)
+		1 = I
+		VEA (23)
+(12)	G ? SNC (14)
+		2 = I
+(13)	CIC
+			B(I) ? SSC (23)
+		REP (13) I, 2, 8
+(14)	H + 1 = I
+		I - 8 ? SSP (16)
+(15)	CIC
+			B(I) ? SSC (23)
+		REP (15) I, 1, 8
+(16)	2 = I
+(17)	CIC
+			B(I) ? SSC (23)
+		REP (17) I, 1, 9
+		VEA (25)
+
+; Entrada del camino +2: marca que el triple es una jugada
+; ganadora y reutiliza la busqueda de la celda vacia de (19).
+(18)	1 = F(0)
+		VEA (19)
+
+; ==============================================================
+; FASE 8: bloqueo / jugada ganadora
+; I es el inicio del triple que suma -2 (bloqueo) o +2 (victoria);
+; se busca su celda vacia. F(0)=1 indica que hay que ganar.
+; ================================================================
+(19)	I = M
+		I + 2 = T
+(20)	CIC
+			D(M) ? SSC (21)
+		REP (20) M, 1, T
+(21)	C(M) = I
+		F(0) ? SNC (22)
+		VEA (23)
+(22)	I = H
+		VAS (27)
+		VAS (30)
+		TIT YO GANO
+		LIN
+		VEA (26)
+
+; ================================================================
+; FASE 9: la computadora coloca ficha y se imprime el tablero
+; ================================================================
+(23)	I = H
+		VAS (27)
+		1 = D(0)
+		VAS (30)
+		T ? SNC (25)
+		VEA (4)
+
+; ================================================================
+; FASE 10: finales de partida
+; ================================================================
+(24)	TIT NO SE LE PERMITE GANAR
+		LIN
+; El original llena B con 1 y llama a 117; como el tablero queda
+; lleno, 117 salta directamente a EMPATE sin imprimir. Se conserva
+; el efecto: ir directamente a EMPATE.
+(25)	TIT EMPATE
+		LIN
+; ================================================================
+; FASE 11: reintentar o terminar
+; ================================================================
+(26)	TIT OTRA VEZ (ESCRIBA 0):
+		LEC I
+		I ? SSC (1)
+		ALT
+
+; ================================================================
+; SUBRUTINAS
+; ================================================================
+
+; ----------------------------------------------------------------
+; (27) Coloca la ficha B(0) en la celda H y actualiza los triples
+; ----------------------------------------------------------------
+(27)	CRU
+		B(0) = B(H)
+		1 = M
+(28)	CIC
+			C(M) - H ? SNC (29)
+			B(0) = D(M)
+(29)	REP (28) M, 1, 24
+		FRU (27)
+
+; ----------------------------------------------------------------
+; (30) Comprueba si el tablero esta lleno; si no, lo imprime.
+; Devuelve T=1 si esta lleno (ir a EMPATE), T=0 si imprimio.
+; (los trucos N=1000/N<100 se sustituyen por T)
+; ----------------------------------------------------------------
+(30)	CRU
+		F(0) ? SNC (32)
+		0 = T
+		1 = M
+(31)	CIC
+			B(M) ? SSC (32)
+		REP (31) M, 1, 9
+		1 = T
+		VEA (38)
+
+(32)	1 = M
+(33)	CIC
+			0 = I
+(34)		CIC
+				I + M = T
+				A(T) = T
+				B(T) = T
+				T ? SNC (35)
+				TIT .
+				VEA (37)
+(35)			T - 1 ? SNC (36)
+				TIT O
+				VEA (37)
+(36)			TIT X
+(37)			ESP 1
+			REP (34) I, 1, 2
+			LIN
+		REP (33) M, 3, 9
+		LIN
+		0 = T
+(38)	FRU (30)
+
+		FIN  

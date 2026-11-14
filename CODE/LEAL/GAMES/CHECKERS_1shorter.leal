@@ -1,0 +1,201 @@
+; ================================================================
+; DAMAS - Traduccion a LEAL del clasico de BASIC Computer Games
+; Versión optimizada (sin multiplicaciones en bucles)
+; ================================================================
+
+LEAL
+TITULO DAMAS
+ENT X Y U V T W A B C S(64)
+FLO
+REF (24)
+
+; ================================================================
+; FASE 1: Inicializar tablero
+; ================================================================
+(1) 1 = T
+(2) CIC
+    0 = S(T)
+    REP (2) T, 1, 64
+
+; ================================================================
+; FASE 2: Colocar piezas iniciales
+; ================================================================
+; Computadora (1)
+1 = S(1)
+1 = S(3)
+1 = S(5)
+1 = S(7)
+1 = S(10)
+1 = S(12)
+1 = S(14)
+1 = S(16)
+1 = S(17)
+1 = S(19)
+1 = S(21)
+1 = S(23)
+
+; Jugador (2)
+2 = S(42)
+2 = S(44)
+2 = S(46)
+2 = S(48)
+2 = S(49)
+2 = S(51)
+2 = S(53)
+2 = S(55)
+2 = S(58)
+2 = S(60)
+2 = S(62)
+2 = S(64)
+
+VEA (3)
+
+; ================================================================
+; FASE 3: Turno del Jugador
+; ================================================================
+(3) TIT DE X Y
+    LEC X
+    X + 1 ? SSC (24)      ; Salir del juego
+    LEC Y
+
+    ; Validar coordenadas
+    X - 1 ? SSN (3)
+    X - 8 ? SSP (3)
+    Y - 1 ? SSN (3)
+    Y - 8 ? SSP (3)
+
+    ; Única multiplicación (solo 1 vez por turno)
+    Y - 1 = T
+    T : 8 + X = T
+    
+    S(T) - 2 ? SNC (4)    ; Verificar que sea pieza del jugador
+    VEA (5)
+
+(4) TIT NO ES TUYA
+    LIN
+    VEA (3)
+
+(5) TIT A U V
+    LEC U
+    LEC V
+
+    U - 1 ? SSN (5)
+    U - 8 ? SSP (5)
+    V - 1 ? SSN (5)
+    V - 8 ? SSP (5)
+
+    V - 1 = W
+    W : 8 + U = W
+    S(W) ? SNC (6)        ; Verificar que destino esté vacío
+    VEA (7)
+
+(6) TIT OCUPADO
+    LIN
+    VEA (5)
+
+; ================================================================
+; FASE 4: Validar movimiento diagonal
+; ================================================================
+(7) X - U EAB = A
+    Y - V EAB = B
+    A - B ? SNC (3)       ; Debe ser diagonal (A == B)
+    A - 1 ? SSN (3)       ; No puede ser la misma casilla
+    A - 2 ? SSP (3)       ; No puede saltar más de 2
+
+    0 = S(T)
+    2 = S(W)
+
+    ; Comprobar si comió pieza (salto = distancia 2)
+    A - 2 ? SNC (8)
+    X + U = A
+    A / 2 = A
+    Y + V = B
+    B / 2 = B
+    B - 1 = C
+    C : 8 + A = C
+    0 = S(C)
+
+(8) VEA (9)
+
+; ================================================================
+; FASE 5: Turno de la Computadora (IA optimizada)
+; ================================================================
+(9) 1 = Y
+    1 = X
+    1 = T
+(10) CIC
+    S(T) - 1 ? SNC (14)   ; Si no es pieza de la PC, saltar al incremento
+
+    ; Noroeste (T-9)
+    X - 1 ? SSC (11)
+    Y - 1 ? SSC (11)
+    T - 9 = W
+    S(W) ? SNC (11)
+    VEA (16)
+
+    ; Noreste (T-7)
+(11) X - 8 ? SSC (12)
+    Y - 1 ? SSC (12)
+    T - 7 = W
+    S(W) ? SNC (12)
+    VEA (16)
+
+    ; Suroeste (T+7)
+(12) X - 1 ? SSC (13)
+    Y - 8 ? SSC (13)
+    T + 7 = W
+    S(W) ? SNC (13)
+    VEA (16)
+
+    ; Sureste (T+9)
+(13) X - 8 ? SSC (14)
+    Y - 8 ? SSC (14)
+    T + 9 = W
+    S(W) ? SNC (14)
+    VEA (16)
+
+    ; Incremento manual de X e Y
+(14) X + 1 = X
+    X - 9 ? SSN (17)      ; Si X < 9, saltar el reinicio
+    1 = X                 ; Reiniciar columna
+    Y + 1 = Y             ; Siguiente fila
+
+(17) REP (10) T, 1, 64    ; T incrementa solo, sin multiplicar
+    VEA (15)              ; Si termina el bucle, la PC no tiene movimientos
+
+(16) 0 = S(T)
+    1 = S(W)
+    VEA (18)              ; Ir a imprimir
+
+(15) TIT PC NO MUEVE
+    LIN
+    TIT GANASTE
+    LIN
+    VEA (24)
+
+; ================================================================
+; FASE 6: Imprimir tablero (optimizado con contador C)
+; ================================================================
+(18) 1 = C
+    1 = T
+(19) CIC
+    S(T) ? SNC (20)       ; Si no está vacío, comprobar pieza
+    TIT .                 ; Vacío
+    VEA (22)
+
+(20) S(T) - 1 ? SNC (21)  ; Si no es 1, es 2
+    TIT X                 ; Computadora
+    VEA (22)
+
+(21) TIT O                ; Jugador
+
+(22) ESP 1                ; Separador
+    C + 1 = C
+    C - 9 ? SSN (23)      ; Si C < 9, saltar salto de línea
+    LIN                   ; Fin de fila
+    1 = C                 ; Reiniciar contador
+
+(23) REP (19) T, 1, 64
+    VEA (3)               ; Volver al jugador
+
+(24) FIN

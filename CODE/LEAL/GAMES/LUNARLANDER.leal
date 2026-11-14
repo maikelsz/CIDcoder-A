@@ -1,0 +1,436 @@
+; ================================================================
+; LUNARLANDER - traduccion nueva desde LUNARLANDER.bas
+;
+; Escala coherente: 1 milla = 1600 m (decision del usuario).
+; 1 mi   = 1600 m
+; 1 mi/s = 1600 m/s
+; 1 mi/s2= 1600 m/s2
+; 1 mph  = 1600/3600 = 0.444444 m/s
+; 1 lb   = 0.45359237 kg
+;
+; Basic original (unidades imperiales):
+; A = 120 mi          -> 192000.0 m
+; V = 1 mi/s          -> 1600.0 m/s
+; M = 33000 lb        -> 14968.6 kg
+; N = 16500 lb        -> 7484.3 kg
+; G = 1E-03 mi/s2     -> 1.6 m/s2
+; Z = 1.8 mi/s2       -> 2880.0 m/s2
+; 1.2 mph             -> 0.533333 m/s
+; 10 mph              -> 4.444444 m/s
+; 60 mph              -> 26.666667 m/s
+; crater = 0.227*W ft, W=3600*V mi/s
+; -> 0.1547727*V m
+;
+; Secuencia de aterrizaje "buena" (K en kg/s, un valor cada 10 s): 
+; (43, 42, 40, 39, 38, 37, 36, 35, 34, 33, 31, 31, 30, 29, 28, 27, 26, 25, 24, 23, 23, 22, 21, 20, 20) 
+; -> impacto a 3 m/s (BUEN ALUNIZAJE; PERFECTO exige <= 0.53 m/s).
+; 45, 44, 42, 41, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 20 <-a probar
+;
+; ----------------------------------------------------------------
+; PRESUPUESTO DE PAGINA 0
+;
+; Cada literal flotante distinto ocupa 1 palabra de pagina 0 y
+; cada escalar FLO ocupa 2. Para que quepa se aplican dos reglas:
+;
+; a) I se fusiona con A: la altitud nueva se escribe directamente
+; en A (la A vieja solo se usa en el primer termino de 430).
+; b) Las constantes derivadas se calculan con las basicas
+; (0.5 2.0 3.0 5.0 6.0 1.6 0.05 0.1547727 1600.0 2880.0 7484.3):
+; A0   = 1600*2*2*2*3*5 = 192000
+; M0   = 7484.3*2       = 14968.6
+; T    = 2*5            = 10
+; P    = 1.6/3          = 0.533333
+; B    = 1600/8/3/3/5   = 4.444444
+; C    = 1600/4/3/5     = 26.666667
+; q^3/12 = q^3/3/2/2 ; q^4/20 = q^4/2/2/5
+; q^4/4  = q^4/2/2   ; q^5/30 = q^5/5/6
+; 1.0    = 0.5+0.5
+; 0.0    = L-L  /  se acumula en positivo y se resta
+;
+; ----------------------------------------------------------------
+; Correspondencia con el BASIC:
+; (1)  10-110   instrucciones / reintento
+; (2)  120-140  inicio y cabecera
+; (3)  150      estado y lectura de K
+; (4)  160      control de combustible
+; (5)  170      control de tiempo
+; (6)  180      paso normal
+; (7)  190      paso limitado por combustible
+; (8)  200      integracion y control de altitud
+; (9)  210      control de V
+; (10) 220      control de J (velocidad nueva)
+; (11) 230      actualizar y repetir
+; (12) 240      combustible agotado
+; (13) 250      actualizar tras el impacto
+; (14) 260      mensaje de impacto
+; (15) 274      alunizaje perfecto
+; (16) 280      buen alunizaje
+; (17) 282      prueba de crater
+; (18) 284-288  nave danada
+; (19) 300-320  crater
+; (20) 330      subrutina de actualizacion
+; (21) 340      bucle de descenso final
+; (22) 350      paso de descenso final
+; (23) 360      integrar y actualizar el descenso final
+; (24) 370      paso con velocidad negativa
+; (25) 380      control de altitud en 370
+; (26) 390      actualizar y salir de 370
+; (27) 400      control de V en 400
+; (28) 410      volver al bucle principal
+; (29) 420-430  nueva velocidad y nueva altitud
+; (30) 440      otra vez
+; (31)          imprimir entero (PEN + PER)
+; ================================================================
+
+		LEAL
+		TITULO LUNARLANDER
+		ENT K
+		FLO A
+		FLO V
+		FLO M
+		FLO T
+		FLO S
+		FLO J
+		FLO Q
+		FLO W
+		FLO L
+		FLO X
+		REF (31)
+
+; ================================================================
+; (1) INSTRUCCIONES (BASIC 10-110)
+; ================================================================
+(1)		TIT LUNARLANDER
+		LIN
+		TIT SIMULACION DE ALUNIZAJE
+		LIN
+		TIT FALLA COMPUTADORA! ALUNICE.
+		LIN
+		TIT CONSUMO: 0-90 KG/S CADA 10 S.
+		LIN
+		TIT CAPSULA: 14968 KG. COMBUSTIBLE: 7484 KG.
+		LIN
+
+; ================================================================
+; (2) INICIO (BASIC 120-140)
+; A = 192000 = 1600*2*2*2*3*5 ; M = 14968.6 = 7484.3*2
+; ================================================================
+(2)		L - L = L
+		TIT T-SEG ALT-M VEL-M/S COMB-KG CONSUMO
+		LIN
+		ESP 1
+		1600.0 : 2.0 : 2.0 : 2.0 : 3.0 : 5.0 = A
+		1600.0 = V
+		7484.3 : 2.0 = M
+
+; ================================================================
+; (3) ESTADO Y LECTURA DE K (BASIC 150)
+; ================================================================
+(3)		VAS (31) L
+		ESP 4
+		VAS (31) A
+		ESP 1
+		VAS (31) V
+		ESP 4
+		M - 7484.3 = X
+		VAS (31) X
+		ESP 4
+		TIT CONSUMO:
+		LEC K
+		2.0 : 5.0 = T
+
+; ================================================================
+; (4) CONTROL DE COMBUSTIBLE (BASIC 160)
+; ================================================================
+(4)		0.5 / 2.0 / 2.0 / 5.0 / 5.0 = X
+		M - 7484.3 - X ? SSN (12)
+
+; ================================================================
+; (5) CONTROL DE TIEMPO (BASIC 170)
+; ================================================================
+(5)		T - X ? SSN (3)
+
+; ================================================================
+; (6) PASO NORMAL (BASIC 180)
+; ================================================================
+(6)		T = S
+		S : K = X
+		7484.3 + X = X
+		M - X ? SNN (8)
+
+; ================================================================
+; (7) PASO LIMITADO POR COMBUSTIBLE (BASIC 190)
+; ================================================================
+(7)		M - 7484.3 = X
+		X / K = S
+
+; ================================================================
+; (8) INTEGRACION Y CONTROL DE ALTITUD (BASIC 200)
+; X trae la altitud nueva; A sigue siendo la altitud actual.
+; ================================================================
+(8)		VAS (29)
+		X ? SNP (21)
+
+; ================================================================
+; (9) CONTROL DE V (BASIC 210)
+; ================================================================
+(9)		V ? SNP (11)
+
+; ================================================================
+; (10) CONTROL DE J (BASIC 220)
+; ================================================================
+(10)	J ? SSN (24)
+
+; ================================================================
+; (11) ACTUALIZAR Y REPETIR (BASIC 230)
+; ================================================================
+(11)	VAS (20)
+		VEA (4)
+
+; ================================================================
+; (12) COMBUSTIBLE AGOTADO (BASIC 240)
+; S = (-V + sqrt(V*V + 2*A*G)) / G
+; ================================================================
+(12)	TIT COMBUSTIBLE AGOTADO
+		ESP 1
+		VAS (31) L
+		TIT  S.
+		LIN
+		V : V = X
+		1.6 : A = W
+		W + W = W
+		X + W = X
+		X RAC = X
+		X - V = X
+		1.6 = W
+		X / W = S
+
+; ================================================================
+; (13) ACTUALIZAR TRAS EL IMPACTO (BASIC 250)
+; ================================================================
+(13)	1.6 : S = X
+		V + X = V
+		L + S = L
+
+; ================================================================
+; (14) MENSAJE DE IMPACTO (BASIC 260)
+; ================================================================
+(14)	TIT ALUNIZAJE EN
+		ESP 1
+		VAS (31) L
+		TIT  S. VEL.
+		ESP 1
+		VAS (31) V
+		TIT  M/S
+		LIN
+
+; ================================================================
+; (15) ALUNIZAJE PERFECTO (BASIC 274)
+; umbral = 1.2 mph = 1.6/3 m/s
+; ================================================================
+(15)	1.6 / 3.0 = X
+		V - X ? SSP (16)
+		TIT PERFECTO!
+		LIN
+		VEA (30)
+
+; ================================================================
+; (16) BUEN ALUNIZAJE (BASIC 280)
+; umbral = 10 mph = 1600/360 m/s
+; ================================================================
+(16)	1600.0 / 2.0 / 2.0 / 2.0 / 3.0 / 3.0 / 5.0 = X
+		V - X ? SSP (17)
+		TIT BUEN ALUNIZAJE
+		LIN
+		VEA (30)
+
+; ================================================================
+; (17) PRUEBA DE CRATER (BASIC 282)
+; umbral = 60 mph = 1600/60 m/s
+; ================================================================
+(17)	1600.0 / 2.0 / 2.0 / 3.0 / 5.0 = X
+		V - X ? SSP (19)
+
+; ================================================================
+; (18) NAVE DANADA (BASIC 284-288)
+; ================================================================
+(18)	TIT DANOS! ESPERE.
+		LIN
+		VEA (30)
+
+; ================================================================
+; (19) CRATER (BASIC 300-320)
+; profundidad = 0.1547727 * V
+; ================================================================
+(19)	TIT SE ESTRELLO! CRATER
+		ESP 1
+		V : 0.1547727 = X
+		VAS (31) X
+		TIT  METROS
+		LIN
+		VEA (30)
+
+; ================================================================
+; (20) SUBRUTINA DE ACTUALIZACION (BASIC 330)
+; L=L+S : T=T-S : M=M-S*K : A=X (altitud nueva) : V=J
+; La altitud nueva llega en X (29); A vieja se conserva hasta aqui
+; porque (22) la necesita como altitud actual.
+; ================================================================
+(20)	CRU
+		L + S = L
+		T - S = T
+		X = A
+		S : K = X
+		M - X = M
+		J = V
+		FRU (20)
+
+; ================================================================
+; (21) BUCLE DE DESCENSO FINAL (BASIC 340)
+; ================================================================
+(21)	0.5 / 2.0 / 2.0 / 5.0 / 5.0 = X
+		S - X ? SSN (14)
+
+; ================================================================
+; (22) PASO DE DESCENSO FINAL (BASIC 350)
+; D = V + sqrt(V*V + 2*A*(G - Z*K/M)) : S = 2*A/D
+; ================================================================
+(22)	2880.0 : K = X
+		X / M = X
+		1.6 - X = X
+		2.0 : A = W
+		W : X = W
+		V : V = Q
+		Q + W = Q
+		Q RAC = Q
+		V + Q = Q
+		2.0 : A = W
+		W / Q = S
+
+; ================================================================
+; (23) INTEGRAR Y ACTUALIZAR EL DESCENSO FINAL (BASIC 360)
+; ================================================================
+(23)	VAS (29)
+		VAS (20)
+		VEA (21)
+
+; ================================================================
+; (24) PASO CON VELOCIDAD NEGATIVA (BASIC 370)
+; W = (1 - M*G/(Z*K)) / 2
+; S = M*V/(Z*K*(W + sqrt(W*W + V/Z))) + 0.05
+; ================================================================
+(24)	1.6 : M = Q
+		2880.0 : K = J
+		Q / J = Q
+		0.5 + 0.5 - Q = Q
+		Q : 0.5 = W
+		W : W = X
+		V / 2880.0 = Q
+		X + Q = X
+		X RAC = X
+		W + X = X
+		J : X = Q
+		M : V = X
+		X / Q = X
+		0.5 / 2.0 / 5.0 = W
+		X + W = S
+		VAS (29)
+
+; ================================================================
+; (25) CONTROL DE ALTITUD EN 370 (BASIC 380)
+; ================================================================
+(25)	X ? SNP (21)
+
+; ================================================================
+; (26) ACTUALIZAR Y SALIR DE 370 (BASIC 390)
+; ================================================================
+(26)	VAS (20)
+		J ? SSP (28)
+
+; ================================================================
+; (27) CONTROL DE V EN 400 (BASIC 400)
+; ================================================================
+(27)	V ? SSP (24)
+		VEA (28)
+
+; ================================================================
+; (28) VOLVER AL BUCLE PRINCIPAL (BASIC 410)
+; ================================================================
+(28)	VEA (4)
+
+; ================================================================
+; (29) SUBRUTINA 420+430: NUEVA VELOCIDAD Y NUEVA ALTITUD
+; Q = S*K/M
+; J = V + G*S + Z*(-Q - Q^2/2 - Q^3/3 - Q^4/4 - Q^5/5)
+; A = A - G*S^2/2 - V*S + Z*S*(Q/2 + Q^2/6 + Q^3/12 + Q^4/20 + Q^5/30)
+;
+; Se calcula primero J y al final la altitud nueva, que queda en X
+; SIN tocar A: (22) necesita la altitud vieja como altitud actual, y
+; es (20) quien hace A := X.  El polinomio de la altitud se evalua
+; por Horner sobre 60*suma = 2Q^4+3Q^3+5Q^2+10Q+30.
+; ================================================================
+(29)	CRU
+		S : K = Q
+		Q / M = Q
+; --- velocidad (BASIC 420) ---
+; suma = Q + Q^2/2 + Q^3/3 + Q^4/4 + Q^5/5
+		Q = J
+		Q = X
+		J : Q = J
+		J / 2.0 = W
+		X + W = X
+		J : Q = J
+		J / 3.0 = W
+		X + W = X
+		J : Q = J
+		J / 2.0 / 2.0 = W
+		X + W = X
+		J : Q = J
+		J / 5.0 = W
+		X + W = X
+		1.6 : S = J
+		V + J = J
+		2880.0 : X = W
+		J - W = J
+; --- altitud (BASIC 430) ---
+		Q : 2.0 = X
+		X + 3.0 = X
+		X : Q = X
+		X + 5.0 = X
+		X : Q = X
+		2.0 : 5.0 = W
+		X + W = X
+		X : Q = X
+		3.0 : 2.0 : 5.0 = W
+		X + W = X
+		X / 2.0 / 2.0 / 3.0 / 5.0 = X
+		X : Q = X
+		2880.0 : S = W
+		W : X = X
+		1.6 : S = W
+		W : S = W
+		W : 0.5 = W
+		V : S = Q
+		W + Q = W
+		W - X = W
+		A - W = X
+		FRU (29)
+
+; ================================================================
+; (30) OTRA VEZ (BASIC 440)
+; ================================================================
+(30)	LIN
+		LIN
+		TIT OTRA VEZ...
+		LIN
+		VEA (1)
+
+; ================================================================
+; (31) IMPRIMIR ENTERO (PEN + PER)
+; ================================================================
+(31)	CRU X
+		X PEN = K
+		PER K
+		FRU (31)
+
+		FIN

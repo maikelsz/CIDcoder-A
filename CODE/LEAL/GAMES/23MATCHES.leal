@@ -1,0 +1,114 @@
+; ================================================================
+; El juego de los 23 fósforos
+; Traducido del BASIC original a LEAL para CID 201-A
+; ================================================================
+	LEAL
+	TITULO MATCHES
+	ENT M H C R Q T X
+	FLO
+	REF (8)
+
+; --- Mensaje de bienvenida ---
+	TIT JUEGO DE LOS 23 FOSFOROS
+	LIN
+	TIT EMPEZAMOS CON 23 FOSFOROS
+	LIN
+	TIT TU JUEGAS PRIMERO
+	LIN
+	TIT PUEDES TOMAR 1 2 O 3
+	LIN
+	TIT EL QUE TOME EL ULTIMO PIERDE
+	LIN
+	LIN
+
+; --- Inicialización ---
+	23 = M				; Fósforos restantes
+	12345 = X			; Semilla para el generador aleatorio
+
+; ================================================================
+; BUCLE PRINCIPAL (Turno del Humano)
+; ================================================================
+(1)	TIT QUEDAN
+	ESP 1
+	PER M
+	ESP 1
+	TIT FOSFOROS
+	LIN
+	TIT CUANTOS TOMAS?
+    
+(2)	LEC H				; Leer cantidad del humano
+    
+; --- Validaciones del humano ---
+	H ? SNP (2)			; CORREGIDO: Si H <= 0, volver a pedir (evita el Enter vacío)
+	H - 3 ? SSP (2)		; Si H > 3, error
+	H - M ? SSP (2)		; Si H > M, error
+    
+; --- Restar fósforos ---
+	M - H = M
+    
+; --- Verificar si el humano perdió (tomó el último) ---
+	M ? SSC (5)
+    
+; ================================================================
+; TURNO DE LA COMPUTADORA
+; ================================================================
+(3)						; Si solo queda 1 fósforo, la computadora está obligada a tomarlo y pierde
+	M - 1 ? SSC (6) 
+    
+; --- Calcular el resto (M mod 4) ---
+	M / 4 = Q
+	Q : 4 = T
+	M - T = R
+    
+; --- Si el resto NO es 1, jugar la estrategia perfecta ---
+	R - 1 ? SNC (4)		; Si R != 1, ir a (4)
+    
+; --- Si el resto ES 1, jugar aleatorio (1 o 2) ---
+	X : 7 + 3 = X
+	X / 4093 = Q
+	Q : 4093 = T
+	X - T = X
+    
+	X / 2 = Q
+	Q : 2 = T
+	X - T = C
+	C + 1 = C			; C será 1 o 2
+	VEA (7)
+    
+(4)						; --- Estrategia perfecta: C = (R + 3) mod 4 ---
+	R + 3 = C
+	C / 4 = Q
+	Q : 4 = T
+	C - T = C
+    
+(7)						; --- Restar fósforos de la computadora ---
+	M - C = M
+	TIT YO TOMO
+	ESP 1
+	PER C
+	ESP 1
+	TIT FOSFOROS
+	LIN
+    
+; Si M se volvió 0, la computadora tomó el último y pierde
+	M ? SSC (6)
+    
+	VEA (1)				; Volver al turno del humano
+
+; ================================================================
+; FIN DEL JUEGO
+; ================================================================
+(5)						; Etiqueta de victoria de la computadora
+	TIT YO GANO
+	LIN
+	TIT MAS SUERTE LA PROXIMA
+	LIN
+	VEA (8)
+
+(6)						; Etiqueta de victoria del humano
+	TIT TU GANASTE
+	LIN
+	TIT FELICIDADES
+	LIN
+
+(8)	FIN
