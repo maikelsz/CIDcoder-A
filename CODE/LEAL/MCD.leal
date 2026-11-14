@@ -18,6 +18,10 @@ LEC X
 TIT B:
 LEC Y
 
+; Normalizar signos: MCD y MCM se definen no negativos
+X EAB = X
+Y EAB = Y
+
 ; ================================================================
 ; FASE 2: Llamar a la subrutina GCD(X, Y) -> R
 ; ================================================================
@@ -32,10 +36,11 @@ PER R
 LIN
 
 ; ================================================================
-; FASE 4: Calcular MCM = (X : Y) / R
+; FASE 4: Calcular MCM = (X / R) : Y
+; (dividir antes evita desbordar X:Y)
 ; ================================================================
-X : Y = P
-P / R = L
+X / R = P
+P : Y = L
 
 TIT LCM:
 ESP 1
