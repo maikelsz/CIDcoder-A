@@ -1,0 +1,224 @@
+; ================================================================
+; CHOMP - traduccion a LEAL del clasico de BASIC Computer Games
+; (juego 26). Una galleta grande con una casilla envenenada.
+;
+; El tablero se guarda en A(0..80): indice = (fila-1)*9 + (col-1).
+; A(0) es la casilla envenenada (1,1). Las casillas intactas se
+; dibujan con O; el teletipo no tiene asterisco.
+;
+; Etiquetas:
+;  (1) inicio             (10) calcular jugador
+;  (2) preguntar reglas   (11) pedir coordenadas
+;  (3) reglas             (12) tiro invalido
+;  (4) nueva partida      (13) chomp: fila exterior
+;  (5) limpiar tablero    (14) chomp: columna interior
+;  (6) pedir filas        (15) pierde el jugador
+;  (7) pedir columnas     (16) otra vez
+;  (8) llenar tablero     (17)-(25) subrutinas
+;  (9) imprimir tablero
+; ================================================================
+	LEAL
+	TITULO CHOMP
+	ENT A(80) R C P I J K Z X Y Q W
+	FLO
+	REF (25)
+
+; ----------------------------------------------------------------
+(1)	TIT CHOMP
+	LIN
+	LIN
+	TIT ESTE ES EL JUEGO DE CHOMP.
+	LIN
+	TIT (SCIENTIFIC AMERICAN, ENERO 1973)
+	LIN
+	LIN
+(2)	TIT QUIERE LAS REGLAS (1=SI, 0=NO)?
+	ESP 1
+	LEC W
+	LIN
+	W ? SNC (3)
+	VEA (4)
+
+; ----------------------------------------------------------------
+(3)	TIT CHOMP ES PARA UNO O MAS JUGADORES (SOLO HUMANOS).
+	LIN
+	LIN
+	TIT ASI ES UN TABLERO (ESTE ES DE 5 POR 7):
+	LIN
+	5 = R
+	7 = C
+	VAS (17)
+	VAS (20)
+	LIN
+	TIT EL TABLERO ES UNA GALLETA GRANDE: R FILAS DE ALTO
+	LIN
+	TIT Y C COLUMNAS DE ANCHO. USTED DA R Y C AL PRINCIPIO.
+	LIN
+	TIT EN LA ESQUINA SUPERIOR IZQUIERDA ESTA LA CASILLA
+	LIN
+	TIT ENVENENADA (P). EL QUE CHOMPA ESA CASILLA PIERDE.
+	LIN
+	TIT PARA CHOMPAR, DE LA FILA Y LA COLUMNA DE UNA CASILLA.
+	LIN
+	TIT TODAS LAS CASILLAS DEBAJO Y A LA DERECHA DE ESA
+	LIN
+	TIT CASILLA (INCLUYENDOLA) DESAPARECEN. CHOMP.
+	LIN
+	TIT NO VALE CHOMPAR CASILLAS YA CHOMPADAS NI FUERA DE
+	LIN
+	TIT LOS LIMITES ORIGINALES DE LA GALLETA.
+	LIN
+	LIN
+
+; ----------------------------------------------------------------
+(4)	TIT AQUI VAMOS...
+	LIN
+	LIN
+	0 = I
+(5)	0 = A(I)
+	I + 1 = I
+	I - 80 ? SNP (5)
+	TIT CUANTOS JUGADORES?
+	ESP 1
+	LEC P
+	LIN
+
+(6)	TIT CUANTAS FILAS?
+	ESP 1
+	LEC R
+	LIN
+	R - 9 ? SNP (7)
+	TIT DEMASIADAS FILAS (9 ES EL MAXIMO). OTRA VEZ.
+	LIN
+	VEA (6)
+
+(7)	TIT CUANTAS COLUMNAS?
+	ESP 1
+	LEC C
+	LIN
+	C - 9 ? SNP (8)
+	TIT DEMASIADAS COLUMNAS (9 ES EL MAXIMO). OTRA VEZ.
+	LIN
+	VEA (7)
+
+; ----------------------------------------------------------------
+(8)	VAS (17)
+	VEA (9)
+
+(9)	VAS (20)
+
+; --- turno del jugador Z = (K mod P), con 1..P ---
+(10)	K + 1 = K
+	K / P = Q
+	Q : P = Q
+	K - Q = Z
+	Z ? SNC (11)
+	P = Z
+
+(11)	TIT JUGADOR
+	ESP 1
+	PER Z
+	LIN
+	LIN
+	TIT FILA?
+	ESP 1
+	LEC X
+	LIN
+	TIT COLUMNA?
+	ESP 1
+	LEC Y
+	LIN
+
+; --- validar el tiro ---
+	X - 1 ? SSN (12)
+	X - R ? SSP (12)
+	Y - 1 ? SSN (12)
+	Y - C ? SSP (12)
+	X - 1 = Q
+	9 : Q = Q
+	Q + Y = Q
+	Q - 1 = Q
+	A(Q) ? SSC (12)
+	A(Q) ? SSN (15)
+
+; --- chomp: borrar el rectangulo desde (X,Y) ---
+	X = I
+(13)	Y = J
+(14)	I - 1 = Q
+	9 : Q = Q
+	Q + J = Q
+	Q - 1 = Q
+	0 = A(Q)
+	J + 1 = J
+	J - C ? SNP (14)
+	I + 1 = I
+	I - R ? SNP (13)
+	VEA (9)
+
+; ----------------------------------------------------------------
+(12)	TIT NO VALE. INTENTA CHOMPAR ESPACIO VACIO.
+	LIN
+	VEA (11)
+
+(15)	TIT USTED PIERDE, JUGADOR
+	ESP 1
+	PER Z
+	LIN
+	LIN
+(16)	TIT OTRA VEZ (1=SI, 0=NO)?
+	ESP 1
+	LEC W
+	LIN
+	W - 1 ? SSC (4)
+	ALT
+
+; ----------------------------------------------------------------
+; subrutina 17: llenar el tablero y poner el veneno
+; ----------------------------------------------------------------
+(17)	CRU
+	1 = I
+(18)	1 = J
+(19)	I - 1 = Q
+	9 : Q = Q
+	Q + J = Q
+	Q - 1 = Q
+	1 = A(Q)
+	J + 1 = J
+	J - C ? SNP (19)
+	I + 1 = I
+	I - R ? SNP (18)
+	0 - 1 = Q
+	Q = A(0)
+	FRU (17)
+
+; ----------------------------------------------------------------
+; subrutina 20: dibujar el tablero
+; ----------------------------------------------------------------
+(20)	CRU
+	LIN
+	TIT 1 2 3 4 5 6 7 8 9
+	LIN
+	1 = I
+(21)	PER I
+	ESP 1
+	1 = J
+(22)	I - 1 = Q
+	9 : Q = Q
+	Q + J = Q
+	Q - 1 = Q
+	A(Q) ? SSC (23)
+	A(Q) ? SSN (24)
+	TIT O
+	ESP 1
+	VEA (25)
+(24)	TIT P
+	ESP 1
+(25)	J + 1 = J
+	J - C ? SNP (22)
+(23)	LIN
+	I + 1 = I
+	I - R ? SNP (21)
+	LIN
+	FRU (20)
+
+	FIN

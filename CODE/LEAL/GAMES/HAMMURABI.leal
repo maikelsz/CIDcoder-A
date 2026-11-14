@@ -1,0 +1,341 @@
+; ================================================================
+; HAMMURABI - traduccion a LEAL del clasico de BASIC Computer
+; Games (juego 43).
+;
+; Simulacion de gestion de la antigua Sumeria durante 10 anos.
+; Todo entero: no se declara ninguna variable flotante.
+; RND(1) se reproduce con la LCG habitual:
+;   T = (T:7+3) mod 4093
+;
+; Etiquetas:
+;  (1) inicio                (11) destitucion
+;  (2) informe anual         (12) entrada negativa
+;  (3) estadisticas/precio   (13) error: fanegas (subrutina)
+;  (4) comprar acres         (14) error: acres (subrutina)
+;  (6) vender acres          (15) RND 1..5 (subrutina)
+;  (7) alimentar             (16) actuacion fantastica
+;  (8) sembrar               (17) actuacion dura
+;  (9) cosecha               (18) actuacion regular
+; (10) fin del mandato        (19) despedida
+; (28) destitucion final     (20)-(25) errores y avisos
+; ================================================================
+	LEAL
+	TITULO HAMMURABI
+	ENT Z P S H E Y A I Q D C L N J K T W
+	FLO
+	REF (28)
+
+; ----------------------------------------------------------------
+(1)	TIT HAMMURABI
+	LIN
+	TIT GOBIERNE LA ANTIGUA SUMERIA DURANTE 10 ANOS.
+	LIN
+	LIN
+	0 = K
+	0 = J
+	0 = Z
+	95 = P
+	2800 = S
+	3000 = H
+	H - S = E
+	3 = Y
+	H / Y = A
+	5 = I
+	1 = Q
+	12345 = T
+
+; ----------------------------------------------------------------
+(2)	0 = D
+	LIN
+	TIT HAMMURABI LE INFORMA.
+	LIN
+	Z + 1 = Z
+	TIT EN EL ANO
+	ESP 1
+	PER Z
+	TIT :
+	ESP 1
+	PER D
+	ESP 1
+	TIT  MURIERON DE HAMBRE,
+	ESP 1
+	PER I
+	ESP 1
+	TIT  LLEGARON A LA CIUDAD.
+	LIN
+	P + I = P
+	Q ? SSP (3)
+	P / 2 = P
+	TIT UNA PLAGA TERRIBLE. MURIO LA MITAD DEL PUEBLO.
+	LIN
+
+; ----------------------------------------------------------------
+(3)	TIT POBLACION:
+	ESP 1
+	PER P
+	LIN
+	TIT ACRES:
+	ESP 1
+	PER A
+	LIN
+	TIT RENDIMIENTO:
+	ESP 1
+	PER Y
+	ESP 1
+	TIT  FANEGAS POR ACRE.
+	LIN
+	TIT RATAS COMIERON:
+	ESP 1
+	PER E
+	ESP 1
+	TIT  FANEGAS.
+	LIN
+	TIT ALMACEN:
+	ESP 1
+	PER S
+	ESP 1
+	TIT  FANEGAS.
+	LIN
+	Z - 11 ? SSC (10)
+
+; --- precio de la tierra: Y = INT(10*RND(1)) + 17 ---
+	T : 7 + 3 = T
+	T / 4093 = Q
+	Q : 4093 = C
+	T - C = T
+	T / 10 = Q
+	Q : 10 = C
+	T - C = C
+	C + 17 = Y
+	TIT LA TIERRA CUESTA
+	ESP 1
+	PER Y
+	ESP 1
+	TIT  FANEGAS POR ACRE.
+	LIN
+
+; ----------------------------------------------------------------
+(4)	TIT ACRES A COMPRAR?
+	ESP 1
+	LEC Q
+	LIN
+	Q ? SSN (12)
+	Y : Q = C
+	C - S ? SSP (20)
+	Q ? SSC (6)
+	A + Q = A
+	Y : Q = C
+	S - C = S
+	0 = C
+	VEA (7)
+
+(20)	VAS (13)
+	VEA (4)
+
+; ----------------------------------------------------------------
+(6)	TIT ACRES A VENDER?
+	ESP 1
+	LEC Q
+	LIN
+	Q ? SSN (12)
+	Q - A ? SNN (21)
+	A - Q = A
+	Y : Q = C
+	S + C = S
+	0 = C
+	VEA (7)
+
+(21)	VAS (14)
+	VEA (6)
+
+; ----------------------------------------------------------------
+(7)	TIT FANEGAS PARA ALIMENTAR?
+	ESP 1
+	LEC Q
+	LIN
+	Q ? SSN (12)
+	Q - S ? SSP (22)
+	S - Q = S
+	1 = C
+	VEA (8)
+
+(22)	VAS (13)
+	VEA (7)
+
+; ----------------------------------------------------------------
+(8)	TIT ACRES A SEMBRAR?
+	ESP 1
+	LEC D
+	LIN
+	D ? SSC (9)
+	D ? SSN (12)
+	D - A ? SSP (23)
+	D / 2 = C
+	C - S ? SSP (24)
+	10 : P = W
+	D - W ? SNN (25)
+	S - C = S
+	VEA (9)
+
+(23)	VAS (14)
+	VEA (8)
+
+(24)	VAS (13)
+	VEA (8)
+
+(25)	TIT SOLO TIENE
+	ESP 1
+	PER P
+	ESP 1
+	TIT  PERSONAS PARA CULTIVAR.
+	LIN
+	VEA (8)
+
+; ----------------------------------------------------------------
+; cosecha: Y = 1..5, H = D*Y, ratas, nacimientos, hambre
+; ----------------------------------------------------------------
+(9)	VAS (15)
+	C = Y
+	D : Y = H
+	0 = E
+	VAS (15)
+	C / 2 = N
+	N : 2 = N
+	C - N ? SNC (26)
+	S / C = E
+(26)	S - E = S
+	S + H = S
+	VAS (15)
+	20 : A = N
+	N + S = N
+	N : C = N
+	N / P = N
+	N / 100 = N
+	N + 1 = I
+	Q / 20 = C
+; --- Q = INT(10*(2*RND(1)-0.3)) = (T mod 20) - 3 ---
+	T : 7 + 3 = T
+	T / 4093 = N
+	N : 4093 = W
+	T - W = T
+	T / 20 = N
+	N : 20 = W
+	T - W = Q
+	Q - 3 = Q
+	P - C ? SNN (27)
+	VEA (2)
+(27)	P - C = D
+	100 : D = N
+	45 : P = W
+	N - W ? SSP (11)
+	Z - 1 = N
+	N : J = N
+	100 : D = W
+	W / P = W
+	N + W = N
+	N / Z = J
+	C = P
+	K + D = K
+	VEA (2)
+
+; ----------------------------------------------------------------
+(10)	TIT EN SUS 10 ANOS,
+	ESP 1
+	PER J
+	ESP 1
+	TIT  POR CIENTO MURIO DE HAMBRE AL ANO.
+	LIN
+	TIT EN TOTAL MURIERON
+	ESP 1
+	PER K
+	ESP 1
+	TIT  PERSONAS.
+	LIN
+	A / P = L
+	TIT TERMINO CON
+	ESP 1
+	PER L
+	ESP 1
+	TIT  ACRES POR PERSONA.
+	LIN
+	J - 33 ? SSP (28)
+	L - 7 ? SSN (28)
+	J - 10 ? SSP (17)
+	L - 9 ? SSN (17)
+	J - 3 ? SSP (18)
+	L - 10 ? SSN (18)
+	VEA (16)
+
+(28)	TIT DESTITUIDO Y DECLARADO TRAIDOR.
+	LIN
+	VEA (19)
+
+(11)	TIT MURIO DE HAMBRE
+	ESP 1
+	PER D
+	ESP 1
+	TIT  PERSONAS EN UN ANO.
+	LIN
+	TIT DESTITUIDO Y DECLARADO TRAIDOR.
+	LIN
+	VEA (19)
+
+(16)	TIT ACTUACION FANTASTICA. NI CARLOMAGNO LO HABRIA
+	LIN
+	TIT HECHO MEJOR.
+	LIN
+	VEA (19)
+
+(17)	TIT GOBIERNO DURO. EL PUEBLO LO ODIA.
+	LIN
+	VEA (19)
+
+(18)	TIT PUDO SER MEJOR, PERO NO ESTUVO MAL.
+	LIN
+	VEA (19)
+
+(12)	TIT NO PUEDO HACER ESO.
+	LIN
+	TIT BUSQUE OTRO ADMINISTRADOR.
+	LIN
+	VEA (19)
+
+; ----------------------------------------------------------------
+; subrutinas
+; ----------------------------------------------------------------
+(13)	CRU
+	TIT PIENSE OTRA VEZ. SOLO TIENE
+	ESP 1
+	PER S
+	ESP 1
+	TIT  FANEGAS.
+	LIN
+	FRU (13)
+
+(14)	CRU
+	TIT PIENSE OTRA VEZ. SOLO TIENE
+	ESP 1
+	PER A
+	ESP 1
+	TIT  ACRES.
+	LIN
+	FRU (14)
+
+(15)	CRU
+	T : 7 + 3 = T
+	T / 4093 = C
+	C : 4093 = N
+	T - N = T
+	T / 5 = C
+	C : 5 = N
+	T - N = C
+	C + 1 = C
+	FRU (15)
+
+; ----------------------------------------------------------------
+(19)	LIN
+	TIT HASTA PRONTO.
+	LIN
+	ALT
+
+	FIN
