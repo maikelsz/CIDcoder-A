@@ -4,6 +4,9 @@
 
 Este proyecto recupera en software la cadena de herramienta de la CID 201-A (ICID, 1971): se escribe un programa en el lenguaje algorítmico **LEAL**, se compila al ensamblador **LEN-1** y se ejecuta en un simulador completo de la máquina — con teletipo RFT T-51, perforador, mapa de memoria y microcódigo. Sin dependencias: se abre directo en el navegador, no hay build.
 
+
+<p align="center"><img width="1280" src="https://github.com/maikelsz/CIDmulatorCID201A/blob/main/imgs/CID_201-A_0.jpg" /></p>
+
 - **Estado:** hito vigente versión **0.1.51** (13/Nov/2026), «Baseline limpio; fases 0–2 en curso». Hito anterior 0.1.50.2, eliminación de `*`; antes 0.1.50.1, revisión interna y 0.1.50, Optimización.
 - **Calidad:** 8 suites de regresión permanentes en verde — **1046 checks / 0 fallos** + `survey` **50/50 modos**.
 
