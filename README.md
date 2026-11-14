@@ -39,7 +39,7 @@ FIN
 
 ## Simulación más completa.
 
-Los archivos `.lst` guardados pueden cargarse en el emulador completo de la CID 201-A, disponible en el repositrio de GitHub [CIDmulator-A](https://github.com/maikelsz/CIDmulatorCID201A) y en GitHubPages:[CIDmulator-A](https://maikelsz.github.io/CIDcoder-A/CIDcoder-A.html)
+Los archivos `.lst` guardados pueden cargarse en el emulador completo de la CID 201-A, disponible en el repositorio de GitHub: [CIDmulator-A](https://github.com/maikelsz/CIDmulatorCID201A), y en GitHubPages: [CIDmulator-A](https://maikelsz.github.io/CIDcoder-A/CIDcoder-A.html)
 Para ello:
 1-"Encender" la computadora.
 2-Cargar el archivo `.lst`.
