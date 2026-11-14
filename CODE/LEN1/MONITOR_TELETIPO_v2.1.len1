@@ -1,0 +1,416 @@
+/ ═══════════════════════════════════════════════════════════════════════
+/ MONITOR_TELETIPO CID 201-A v2.1- Monitor interactivo en 2 páginas
+/ ═══════════════════════════════════════════════════════════════════════
+/
+/ PROPÓSITO
+/ ─────────
+/ Programa residente que permite examinar y modificar la memoria de la
+/ CID 201-A desde el teletipo. Se arranca en 7400 (COM con CP=7400)
+/ y se controla con 4 comandos:
+/
+/ R dddd        Lee la dirección dddd: imprime "dddd:vvvv" y CRLF.
+/ R dddd dddd   Lee el rango [d1]..[d2] (inclusive), uno por línea.
+/ A dddd vvvv   Escribe vvvv en [dddd]: imprime "dddd:vvvv" y CRLF.
+/ C dddd        Salta a dddd (imprime dddd + CRLF antes del salto).
+/
+/ Direcciones y valores son OCTALES de 4 dígitos (12 bits).
+/ Todos los comandos requieren Enter al final para ejecutarse.
+/
+/ MAPA DE MEMORIA
+/ ───────────────
+/ Página 0  Variables y punteros compartidos entre las
+/ dos páginas del monitor.
+/ Página 30 - START, DISP, comandos, constantes, TAB_DIG.
+/ 13 palabras libres
+/ Página 31 - Subrutinas E/S, PRINT_OCT4, variables locales.
+/ 22 palabras libres
+/
+/ ESTADO DE AC AL RETORNAR (invariante para el LAC audit)
+/ ─────────────────────────────────────────────────────
+/ GETCHAR     AC = código Murray del carácter leído (0..31)
+/ READ_OCT4   AC = valor de 12 bits leído (0..4095)
+/
+/ CÓDIGOS ITA2 USADOS
+/ ───────────────────
+/ 0010 K_CR    CR (retorno de carro) - también resetea el modo a LTRS
+/ 0002 K_LF    LF (avance de línea)
+/ 0004 K_SP    espacio
+/ 0012 K_R     letra 'R' (modo LTRS)
+/ 0003 K_A     letra 'A'
+/ 0016 K_C     'C' en LTRS, ':' en FIGS   ← se usa como ':' en salida
+/ 0033 K_FIGS  shift a FIGS
+/ 0031 K_QMARK '?' en FIGS (usado para el prompt)
+/ 0037 K_LTRS  shift a LTRS
+/
+/ ═══════════════════════════════════════════════════════════════════════
+/ PÁGINA 0 - Variables y punteros compartidos entre págs. 30 y 31
+/ ═══════════════════════════════════════════════════════════════════════
+/ Estas variables se usan desde código de las dos páginas del monitor.
+/ Se colocan en página 0 porque es la única dirección alcanzable por
+/ IRM directa desde cualquier PC.
+
+*0000
+
+K_CR,          0010                                       / código ITA2 de CR (compartido: CMD_R y PRINT_CRLF)
+P_GETC,        7600                                       / puntero a GETCHAR (pág. 31)
+TMP,           0000                                       / temporal de 12 bits (2 words: low, high)
+               0000
+PTR,           0000                                       / puntero de 12 bits para indirección (2 words)
+               0000
+
+/ ═══════════════════════════════════════════════════════════════════════
+/ PÁGINA 30 - Programa principal: dispatcher, comandos, tablas y
+/ constantes locales.
+/ ═══════════════════════════════════════════════════════════════════════
+*7400
+/ ───────────────────────────────────────────────────────────────────────
+/ START - Punto de entrada del monitor.
+/ Ejecuta tras COM con CP=7400. Pone el teletipo en FIGS y entra al
+/ dispatcher. START solo se ejecuta una vez; tras él, el monitor vive
+/ dentro de DISP hasta que un comando C salte fuera.
+
+START,         LAC                                        / AC = 0 (punto de entrada, AC desconocido)
+               SUM K_FIGS                                 / AC = 0033 (código FIGS)
+               TAP LIP                                    / envía FIGS al perforador, AC = 0
+st_w,          SIP                                        / espera a que el perforador esté libre
+               VEA st_w
+
+/ ───────────────────────────────────────────────────────────────────────
+/ DISP - Imprime el prompt '?' y prepara la lectura.
+/ Fuerza el modo FIGS para que el carácter 0031 se imprima como '?'
+/ y no como la letra 'B'. Tras imprimir el prompt, entra en el bucle
+/ de lectura interna (DISP_LP).
+/
+DISP,          LAC
+               SUM K_FIGS
+               TAP LIP
+df_w,          SIP
+               VEA df_w
+               SUM K_QMARK                                / AC = 0031 (código ITA2 de '?')
+               TAP LIP                                    / imprime '?', AC = 0
+dp_w,          SIP
+               VEA dp_w
+
+/ ───────────────────────────────────────────────────────────────────────
+/ DISP_LP - Bucle de lectura (ignora shifts sin reimprimir '?').
+/ El teclado del simulador a veces inserta caracteres de control
+/ (LTRS/FIGS) al inicio de la escritura. Si el monitor no los reconoce
+/ y salta a DISP, se imprimiría el '?' de nuevo. Saltando a DISP_LP,
+/ simplemente se ignora el carácter y se lee el siguiente.
+/ Convención de comparación: AC = (-TMP + Kn). SAD skipea el VEA
+/ si AC != 0 (TMP != Kn). El VEA se ejecuta SOLO si TMP == Kn.
+/
+DISP_LP,       VAS I P_GETC                               / AC = código del carácter leído
+               DEL TMP                                    / TMP = código, AC = 0
+               SUM TMP                                    / AC = TMP
+               CAC IAC                                    / AC = -TMP
+               SUM K_R                                    / AC = K_R - TMP
+               SAD                                        / skip si TMP != K_R
+               VEA CMD_R                                  / si TMP == K_R, ir a CMD_R
+               LAC                                        / (rama TMP != K_R) AC = 0
+               SUM TMP
+               CAC IAC
+               SUM K_A
+               SAD
+               VEA CMD_A
+               LAC
+               SUM TMP
+               CAC IAC
+               SUM K_C
+               SAD
+               VEA CMD_C
+               VEA DISP_LP                                / carácter no reconocido: reintentar sin imprimir '?'
+
+/ ───────────────────────────────────────────────────────────────────────
+/ CMD_R - Comando R: lee 1 o 2 direcciones.
+/ Flujo:
+/ 1. READ_OCT4 → DIR = primera dirección.
+/ 2. GETCHAR: si es CR → r_cr (single read).
+/ 3. Si no es CR (espacio u otra cosa) → lee segunda dirección
+/ → DIR2, luego GETC + LAC para esperar el Enter final,
+/ y salta a r_range.
+/
+CMD_R,         VAS I P_RD4                                / AC = DIR (valor leído)
+               DEL DIR                                    / DIR = valor, AC = 0
+               VAS I P_GETC                               / AC = código del siguiente carácter
+               DEL TMP                                    / TMP = código, AC = 0
+               SUM TMP                                    / AC = TMP
+               CAC IAC                                    / AC = -TMP
+               SUM K_CR                                   / AC = K_CR - TMP
+               SAD                                        / skip si AC != 0 (TMP != CR)
+               VEA r_cr                                   / si TMP == CR, single read
+               VAS I P_RD4                                / lee la segunda dirección
+               DEL DIR2                                   / DIR2 = valor, AC = 0
+               VAS I P_GETC                               / espera Enter final
+               LAC                                        / AC = 0 (GETC dejó el código de CR)
+               VEA r_range                                / ejecuta el rango
+
+/ ───────────────────────────────────────────────────────────────────────
+/ r_cr - Atajo para "single read" (R dddd + Enter).
+/ Pone DIR2 = DIR y cae en r_range. Como DIR == DIR2, r_range itera
+/ exactamente una vez (imprime una línea y sale por DISP_RETURN).
+/
+r_cr,          SUM DIR                                    / AC = DIR (AC = 0 al entrar por VEA)
+               DEL DIR2                                   / DIR2 = DIR, AC = 0
+               VEA r_range
+
+/ ───────────────────────────────────────────────────────────────────────
+/ r_range - Imprime "DIR:[DIR]" + CRLF por cada dirección de [DIR..DIR2].
+/ Salida: una línea "dddd:vvvv" por dirección, con ':' inline (K_C
+/ se decodifica como ':' en FIGS).
+/
+r_range,       SUM DIR                                    / AC = DIR (asume AC=0)
+               VAS I P_POCT                               / imprime "dddd", AC = 0
+               SUM K_C                                    / AC = 0016 = ':' en FIGS
+               TAP LIP                                    / emite ':' , AC = 0
+rs_c,          SIP                                        / espera al perforador
+               VEA rs_c
+               SUM DIR                                    / AC = DIR
+               DEL PTR                                    / PTR = DIR, AC = 0
+               SUM I PTR                                  / AC = [DIR]
+               VAS I P_POCT                               / imprime "[DIR]" = "vvvv", AC = 0
+               VAS I P_PCRL                               / emite CR+LF, AC = 0
+               SUM DIR                                    / AC = DIR
+               CAC IAC                                    / AC = -DIR
+               SUM DIR2                                   / AC = DIR2 - DIR
+               SAD                                        / skip si AC != 0 (DIR != DIR2)
+               VEA DISP_RETURN                            / si DIR == DIR2, salir
+               LAC                                        / AC = 0 (SAD no limpia AC)
+               SUM DIR                                    / AC = DIR
+               IAC                                        / AC = DIR + 1
+               DEL DIR                                    / DIR = DIR + 1, AC = 0
+               VEA r_range                                / siguiente iteración
+
+/ ───────────────────────────────────────────────────────────────────────
+/ CMD_A - Comando A: escribe [DIR] = DIR2 y muestra confirmación.
+/ Flujo:
+/ 1. Lee DIR.
+/ 2. Lee DIR2.
+/ 3. GETC para consumir el Enter del usuario.
+/ 4. Escribe [DIR] = DIR2.
+/ 5. Prepara r_range con DIR2 = DIR (una sola iteración) y salta
+/ a r_range → imprime "DIR:DIR2" (la confirmación) + CRLF.
+/
+CMD_A,         VAS I P_RD4                                / AC = DIR
+               DEL DIR                                    / DIR = valor, AC = 0
+               VAS I P_RD4                                / AC = DIR2
+               DEL DIR2                                   / DIR2 = valor, AC = 0
+               VAS I P_GETC                               / espera Enter
+               LAC                                        / AC = 0
+               SUM DIR                                    / AC = DIR
+               DEL PTR                                    / PTR = DIR, AC = 0
+               SUM DIR2                                   / AC = DIR2
+               DEL I PTR                                  / [DIR] = DIR2, AC = 0
+               SUM DIR                                    / AC = DIR (prepara r_range)
+               DEL DIR2                                   / DIR2 = DIR, AC = 0
+               VEA r_range                                / imprime "DIR:DIR2" (confirmación)
+
+/ ───────────────────────────────────────────────────────────────────────
+/ CMD_C - Comando C: imprime DIR y salta a DIR (monitor se pierde).
+/ Flujo:
+/ 1. Lee DIR.
+/ 2. GETC para consumir el Enter.
+/ 3. Imprime "dddd" (P_POCT) + CRLF (P_PCRL).
+/ 4. VEA I DIR: salta a la dirección DIR, NO al contenido.
+/
+CMD_C,         VAS I P_RD4                                / AC = DIR
+               DEL DIR                                    / DIR = valor, AC = 0
+               VAS I P_GETC                               / espera Enter
+               LAC                                        / AC = 0
+               SUM DIR                                    / AC = DIR
+               VAS I P_POCT                               / imprime "dddd", AC = 0
+               VAS I P_PCRL                               / emite CR+LF, AC = 0
+               VEA I DIR                                  / CP = [DIR] = dirección destino
+
+/ ───────────────────────────────────────────────────────────────────────
+/ DISP_RETURN - Punto de salida común de r_range.
+/ Emite un CR+LF extra para dejar una línea en blanco entre la
+/ respuesta del comando y el siguiente prompt.
+/
+DISP_RETURN,   VAS I P_PCRL                               / emite CR+LF, AC = 0
+               VEA DISP                                   / vuelve al dispatcher
+
+/ ───────────────────────────────────────────────────────────────────────
+/ Constantes y variables locales a página 30
+*7540
+K_FIGS,        0033                                       / código ITA2 de FIGS (START, DISP)
+K_R,           0012                                       / 'R' en LTRS (DISP_LP)
+K_A,           0003                                       / 'A' en LTRS (DISP_LP)
+K_C,           0016                                       / 'C' en LTRS, ':' en FIGS (DISP_LP, r_range)
+K_QMARK,       0031                                       / '?' en FIGS (prompt)
+DIR,           0000                                       / dirección actual (2 words)
+               0000
+DIR2,          0000                                       / dirección final del rango / valor a escribir (2 words)
+               0000
+P_PCRL,        PRINT_CRLF                                 / puntero a PRINT_CRLF (pág. 31)
+P_RD4,         READ_OCT4                                  / puntero a READ_OCT4 (pág. 31)
+P_POCT,        PRINT_OCT4                                 / puntero a PRINT_OCT4 (pág. 31)
+
+/ ───────────────────────────────────────────────────────────────────────
+/ TAB_DIG - Tabla de codificación Murray (FIGS) de los dígitos octales.
+/ Índice: valor octal 0..7 → word en [TAB_DIG+idx] = código Murray
+/ del dígito en modo FIGS.
+/ Valores: 0→0026 1→0027 2→0023 3→0001 4→0012 5→0020 6→0025 7→0007
+/
+TAB_DIG,       0026 0027 0023 0001 0012 0020 0025 0007
+
+
+/ ═══════════════════════════════════════════════════════════════════════
+/ PÁGINA 31 - Subrutinas de E/S, PRINT_OCT4 y variables locales
+/ ═══════════════════════════════════════════════════════════════════════
+*7600
+
+/ ───────────────────────────────────────────────────────────────────────
+/ GETCHAR - Espera un carácter del lector y lo devuelve en AC.
+/ Entrada: ninguna.
+/ Salida:  AC = código Murray del carácter (5 bits, 0..31). El flag
+/ del lector se limpia. Bloquea indefinidamente hasta que
+/ llegue un carácter.
+/
+GETCHAR,       0000                                       / slot para VAS I
+gc_lp,         SIL                                        / skip si el lector tiene dato
+               VEA gc_lp                                  / si no, seguir esperando
+               LAC                                        / AC = 0 (TLA suma al AC existente)
+               TLA LIL                                    / AC += código leído; limpia flag
+               VEA I GETCHAR                              / retorno
+
+/ ───────────────────────────────────────────────────────────────────────
+/ PRINT_DIG - Imprime un dígito octal (0..7) en FIGS.
+/ Entrada: AC = dígito (0..7).
+/ Salida:  emite FIGS + código Murray del dígito. AC = 0.
+/
+PRINT_DIG,     0000                                       / slot para VAS I
+               DEL DIG                                    / DIG = dígito, AC = 0
+               SUM K_TABD                                 / AC = dirección base de TAB_DIG
+               SUM DIG                                    / AC = base + dígito (índice)
+               DEL PTR                                    / PTR = dirección del código
+               SUM I PTR                                  / AC = TAB_DIG[dígito] = código Murray
+               TAP LIP                                    / emite el código, AC = 0
+pd_w,          SIP                                        / espera al perforador
+               VEA pd_w
+               VEA I PRINT_DIG                            / retorno
+
+/ ───────────────────────────────────────────────────────────────────────
+/ PRINT_CRLF - Emite CR + LF.
+/ Entrada: ninguna.
+/ Salida:  emite K_CR seguido de K_LF. AC = 0.
+/
+PRINT_CRLF,    0000                                       / slot para VAS I
+               LAC                                        / AC = 0
+               SUM K_CR                                   / AC = 0010 (CR)
+               TAP LIP                                    / emite CR, AC = 0
+pc_w1,         SIP                                        / espera al perforador
+               VEA pc_w1
+               SUM K_LF                                   / AC = 0002 (LF); SUM aprovecha AC=0
+               TAP LIP                                    / emite LF, AC = 0
+pc_w2,         SIP
+               VEA pc_w2
+               VEA I PRINT_CRLF                           / retorno
+
+/ ───────────────────────────────────────────────────────────────────────
+/ READ_OCT4 - Lee 4 dígitos octales del teletipo hasta completar una
+/ palabra de 12 bits.
+/ Entrada: ninguna.
+/ Salida:  AC = valor de 12 bits formado por los 4 dígitos.
+/ Ignora en silencio los caracteres que no sean dígitos.
+/ Estado interno:
+/ ACC  acumulador del valor de 12 bits en curso.
+/ TD0  contador de dígitos pendientes (-4 → 0 con ISC).
+/ TD1  índice de búsqueda en TAB_DIG (-8 → 0).
+/ DIG  dígito decodificado (0..7, o 7777 si no es dígito).
+/
+READ_OCT4,     0000                                       / slot para VAS I
+               LAC
+               DEL ACC                                    / ACC = 0, AC = 0
+               SUM K_NEG4                                 / AC = 7774 (-4 en complemento a 2)
+               DEL TD0                                    / TD0 = -4 (contador de dígitos)
+ro_lp,         VAS I P_GETC                               / AC = código del carácter
+               DEL TMP                                    / TMP = código, AC = 0
+               LAC                                        / AC = 0
+               SUM K_NEG8                                 / AC = -8 (inicio del índice de búsqueda)
+               DEL TD1                                    / TD1 = -8, AC = 0
+               SUM K_TABD                                 / AC = base de TAB_DIG
+               DEL PTR                                    / PTR = TAB_DIG[0], AC = 0
+ro_find,       LAC                                        / AC = 0
+               SUM I PTR                                  / AC = TAB_DIG[PTR]
+               CAC IAC                                    / AC = -TAB_DIG[PTR]
+               SUM TMP                                    / AC = TMP - TAB_DIG[PTR]
+               SAC                                        / skip si AC == 0 (match)
+               VEA ro_next                                / AC != 0: no match, siguiente
+               LAC                                        / AC = 0 (SAC no limpia AC)
+               SUM K_NEG8                                 / AC = -8
+               CAC IAC                                    / AC = +8 (complemento a 2)
+               SUM TD1                                    / AC = 8 + TD1 (TD1 va de -8 a -1)
+               DEL DIG                                    / DIG = 8 + TD1 = índice 0..7
+               VEA ro_ok                                  / encontrado, acumular
+ro_next,       LAC                                        / AC = 0
+               SUM PTR                                    / AC = PTR (dirección actual)
+               IAC                                        / AC = PTR + 1 (siguiente entrada)
+               DEL PTR                                    / PTR = PTR + 1, AC = 0
+               ISC TD1                                    / TD1++; si TD1 == 0, skip
+               VEA ro_find                                / si TD1 != 0, seguir buscando
+               LAC                                        / (no encontrado) AC = 0
+               SUM K_7777                                 / AC = 7777 (centinela "no es dígito")
+               DEL DIG                                    / DIG = 7777, AC = 0
+               VEA ro_lp                                  / reintentar con otro carácter
+ro_ok,         LAC                                        / AC = 0
+               SUM ACC                                    / AC = ACC
+               LEN                                        / EN = 0 (prepara rotación limpia)
+               RI3                                        / rota AC+EN 3 a la izquierda (<<3)
+               YLO K_7770                                 / aísla los 9 bits bajos (descarta los 3 altos)
+               SUM DIG                                    / AC = (ACC << 3) + DIG
+               DEL ACC                                    / ACC = nuevo valor, AC = 0
+               ISC TD0                                    / TD0++; si TD0 == 0, skip (4º dígito hecho)
+               VEA ro_lp                                  / si TD0 != 0, leer siguiente dígito
+               SUM ACC                                    / AC = ACC (valor completo)
+               VEA I READ_OCT4                            / retorno
+
+/ ───────────────────────────────────────────────────────────────────────
+/ PRINT_OCT4 - Imprime AC como 4 dígitos octales (sin espacio).
+/ Entrada: AC = valor de 12 bits.
+/ Salida:  imprime "dddd" (4 dígitos, sin ceros suprimidos), AC = 0.
+/ Algoritmo: 4 bloques independientes, uno por dígito:
+/ - RD9 (rotar 9 a la derecha) deja el dígito 3 (bits 9-11) alineado
+/ a los bits 0-2, luego YLO K_7 aísla el dígito.
+/ - RD6 deja el dígito 2, RD3 el 1, YLO K_7 el 0.
+/ - Cada bloque llama a PRINT_DIG para emitir el código FIGS.
+/
+PRINT_OCT4,    0000                                       / slot para VAS I (retorno)
+               DEL TMP                                    / TMP = valor, AC = 0
+               SUM TMP                                    / AC = valor
+               RD9                                        / rota 9: dígito 3 alineado a bits 0-2
+               YLO K_7                                    / AC = dígito 3 (0..7)
+               VAS I P_PDIG                               / imprime dígito, AC = 0
+               SUM TMP
+               RD6                                        / dígito 2
+               YLO K_7
+               VAS I P_PDIG
+               SUM TMP
+               RD3                                        / dígito 1
+               YLO K_7
+               VAS I P_PDIG
+               SUM TMP
+               YLO K_7                                    / dígito 0 (ya está alineado)
+               VAS I P_PDIG
+               VEA I PRINT_OCT4                           / retorno
+
+/ ───────────────────────────────────────────────────────────────────────
+/ Variables locales a página 31
+K_7,           0007                                       / máscara 0o7 (PRINT_OCT4)
+P_PDIG,        7606                                       / puntero a PRINT_DIG (pág. 31)
+K_LF,          0002                                       / LF (PRINT_CRLF)
+K_7770,        7770                                       / máscara 7770 (READ_OCT4, aislar 9 bits bajos)
+K_7777,        7777                                       / centinela "no es dígito" (READ_OCT4)
+K_NEG4,        7774                                       / -4 en complemento a 2 (READ_OCT4, TD0)
+K_NEG8,        7770                                       / -8 en complemento a 2 (READ_OCT4, TD1)
+K_TABD,        7554                                       / dirección de TAB_DIG (pág. 30)
+ACC,           0000                                       / acumulador del valor en curso (2 words)
+               0000
+DIG,           0000                                       / dígito decodificado (0..7 o 7777) (2 words)
+               0000
+TD0,           0000                                       / contador de dígitos pendientes (2 words)
+               0000
+TD1,           0000                                       / índice de búsqueda en TAB_DIG (2 words)
+               0000
+
+$

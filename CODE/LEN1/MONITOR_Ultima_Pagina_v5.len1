@@ -1,0 +1,158 @@
+
+/ -------------------------------------------------------
+/ "Ultima Pagina" v5. CID 201-A. LEN-1. 85 palabras
+/ Monitor de consola. Controla el display decimal, el teclado
+/ numérico y las teclas asociadas (BOR, ALM, REC, -), 
+/ para leer e introducir/modificar datos en memoria,
+/ y ejecutar codigo en memoria
+/
+/ Funcionamiento:
+/ - Los dígitos tecleados se acumulan en RegNum.
+/ - Se muestran hasta cuatro dígitos.
+/ - BOR, retrocede un dígito.
+/ - ALM, almacena el número en direcciones consecutivas.
+/ - REC, recupera el contenido de direcciones consecutivas.
+/ - Signo de Menos "-",  Salta a una direccion especificada.
+/
+/ Variables:
+/ RegNum	valor mostrado en el display
+/ maskH		7000, máscara de los 3 bits altos
+/ maskL		7770, máscara de los 3 bits bajos
+/ RECdir	dirección de recuperación
+/ RECstate	estado de recuperación
+/ ALMdir	dirección de almacenamiento
+/ ALMstate	estado de almacenamiento
+/
+/ Etiquetas:
+/ init		bucle principal de escaneo de teclas
+/ end		limpieza común y vuelta al bucle
+/ input		procesa dígitos tecleados (SID, LID, TRA)
+/ BORrar	procesa tecla BOR
+/ RECupera	procesa tecla REC
+/ saveAdd	guarda dirección inicial de REC
+/ readAdd	lee memoria en dirección de REC
+/ ALMacena	procesa tecla ALM
+/ getAdd	guarda dirección inicial de ALM
+/ escribir	escribe el número en memoria
+/ finALM	finaliza la operación ALM
+/ ejecutar	procesa tecla - y salta
+/ display	subrutina de refresco del display
+/ ---------------------------------------------------------
+
+*7600	/ Ultima Pagina de memoria (#31), entrada al programa
+
+/ init/end, bucle principal
+/ El programa queda en un bucle de escaneo de teclas.
+/ Las subrutinas de input saltan a end al terminar
+/ para volver al bucle. (por que limpiar a RECstate?)
+init,       LAC              / AC = 0
+            VEA input        / salta a rutina de lectura del teclado
+end,        LAC              / AC = 0
+            DEL RECstate     / limpia RECstate
+            VEA init         / reinicia el bucle
+
+/ Constantes y variables
+RegNum,     0000             / valor mostrado en el display
+maskH,      7000             / máscara de los 9 bits altos
+maskL,      7770             / máscara de los 3 bits bajos
+
+/ input, procesa dígitos del teclado decimal
+/ Antes de añadir, verifica que RegNum no tenga ya 4 dígitos
+/ (bits 11-9 != 0 significa que ya hay 4 dígitos octales).
+input,      SID              / ¿tecla dígito presionada?
+            VEA BORrar       / no → probar BOR
+            LID              / limpia indicador de dígito
+            SUM RegNum       / AC = 0 + RegNum
+            YLO maskH        / aísla los 3 bits altos
+            SAC              / ¿AC == 0?
+            VEA end          / no → 4 dígitos ya, descarta
+            LAC              / 0 → AC = 0
+            SUM RegNum       / RegNum → AC = RegNum
+            RI3              / AC<<3 → AC = RegNum << 3
+            YLO maskL        / borra los 3 bits rotados (inecesario?)
+            TRA              / RegDigito → AC
+            VAS display      / actualiza display
+            VEA end          / vuelve al bucle
+
+/ BORrar, borra el último dígito entrado
+BORrar,     SIB              / ¿BOR presionado?
+            VEA RECupera     / no → probar REC
+            LIB              / limpia indicador BOR
+            SUM RegNum       / AC = RegNum
+            YLO maskL        / borra los 3 bits bajos
+            RD3              / desplaza 3 bits a la derecha
+            VAS display      / actualiza display
+            VEA end          / vuelve al bucle
+/ Variables de REC
+RECdir,     0000             / dirección de recuperación
+RECstate,   0000             / estado de recuperación
+
+/ RECupera, recupera memoria en getAddes consecutivas
+/ La primera vez guarda la dirección inicial (RECstate = 0 → saveAdd).
+/ Las siguientes veces lee [RECdir], lo muestra e incrementa RECdir.
+RECupera,   SIR              / ¿REC presionado?
+            VEA ALMacena     / no → probar ALM
+            LIR              / limpia indicador REC
+            SUM RECstate     / AC = RECstate
+            SAC              / ¿RECstate == 0?
+            VEA readAdr      / no → leer direccion inicial
+saveAdr,    LAC              / AC = 0
+            SUM RegNum       / AC = RegNum
+            DEL RECdir       / RECdir = RegNum
+            CAC              / AC = ~0 = 7777
+            DEL RECstate     / RECstate != 0
+readAdr,    LAC              / AC = 0. rutina leer/inc direccion
+            SUM I RECdir     / AC = [RECdir]
+            VAS display      / muestra el valor
+            SUM RECdir       / AC = RECdir
+            IAC              / AC = RECdir + 1
+            DEL RECdir       / RECdir = AC. (RECdir++). AC=0
+            DEL ALMstate     / limpia ALMstate
+            VEA init         / vuelve al bucle
+/ Variables de ALM
+ALMdir,     0000             / dirección de almacenamiento
+ALMstate,   0000             / estado de almacenamiento
+
+/ ALMacena, almacena en getAddes consecutivas
+/ La primera vez guarda la dirección inicial (ALMstate=0 → direccion).
+/ Las siguientes veces escribe [ALMdir]=RegNum e incrementa ALMdir.
+ALMacena,   SIA              / ¿ALM presionado?
+            VEA ejecutar
+            LIA              / limpia indicador ALM
+            SUM ALMstate     / AC = ALMstate
+            SAC              / ¿ALMstate == 0?
+            VEA write        / no → escribir dato
+getAdd,     LAC              / AC = 0. rutina obtener direccion inicial.
+            SUM RegNum       / AC = RegNum
+            DEL ALMdir       / ALMdir = RegNum
+            CAC              / AC = ~0 = 7777
+            DEL ALMstate     / ALMstate != 0
+            VEA endALM       / salta a endALM
+write,      LAC              / AC = 0
+            SUM RegNum       / AC = RegNum
+            DEL I ALMdir     / [ALMdir] = AC
+            SUM ALMdir       / AC = ALMdir. rutina inc direccion
+            IAC              / AC = ALMdir + 1
+            DEL ALMdir       / ALMdir = AC. (ALMdir++). AC=0
+endALM,     DEL RECstate     / limpia RECstate, debido a AC=0 anterior
+            VAS display      / actualiza display
+            VEA init         / vuelve al bucle
+
+/ EJECUTAR, rutina para la tecla "-"
+/ Toma el valor de RegNum como dirección y salta a ella.
+/ Se sale del monitor. Debe regresarse por ALT+7600+CPR+COM
+ejecutar,   SIS              / ¿tecla "-" presionada? (IF = 1)
+            VEA init         / no → vuelve al bucle principal
+            LIS              / limpia indicador IF / tecla "-"
+            LAC              / AC = 0
+            SUM RegNum       / AC = RegNum
+            VEA I RegNum     / PC = [RegNum] → salta a la dirección indicada
+
+/ display, subrutina de refresco del display
+/ Recibe el valor en AC. Lo guarda en RegNum y actualiza el
+/ registro de números del display con TAR.
+display,    0000             / slot para el retorno
+            DEL RegNum       / RegNum = AC
+            SUM RegNum       / AC = RegNum
+            TAR              / RegNum = AC, AC = 0
+            VEA I display    / retorno

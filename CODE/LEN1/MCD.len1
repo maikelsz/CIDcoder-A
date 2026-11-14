@@ -1,0 +1,53 @@
+/ CALCULO DEL MCD DE DOS NUMEROS ENTEROS EN LA CID-201-A
+/ MEDIANTE RESTAS SUCESIVAS (ALGORITMO DE EUCLIDES)
+/ Zona de datos (pagina cero para direccionamiento directo)
+*0
+A,      0d48         / Primer numero
+B,      0d18         / Segundo numero
+NB,     0            / Almacena -B
+NA,     0            / Almacena -A
+/ Programa principal, comienza en direccion 200 (pagina 2)
+*200
+/ Calcular NB = -B (complemento a dos de B)
+        LAC          / AC = 0
+        SUM B        / AC = B
+        VAS NEG      / Llama a la subrutina
+        DEL NB       / NB = -B
+/ Calcular NA = -A (complemento a dos de A)
+        LAC          / AC = 0
+        SUM A        / AC = A
+        VAS NEG      / Llama a la subrutina
+        DEL NA       / NA = -A
+/ Lazo principal
+LOOP,   LAC          / AC = 0
+        SUM A        / AC = A
+        SUM NB       / AC = A + (-B) = A - B
+        SAC          / Si AC = 0 (A = B), saltar a END
+        SAP          / Si AC > 0 (A > B), saltar a AGB
+        VEA END
+        VEA AGB
+/ Caso: A - B < 0, entonces B > A
+        LAC          / AC = 0
+        SUM B        / AC = B
+        SUM NA       / AC = B + (-A) = B - A
+        DEL B        / B = B - A, AC = 0
+        VEA LOOP     / Volver al lazo
+/ Caso: A - B > 0, entonces A > B
+AGB,    LAC          / AC = 0
+        SUM A        / AC = A
+        SUM NB       / AC = A + (-B) = A - B
+        DEL A        / A = A - B, AC = 0
+        VEA LOOP     / Volver al lazo
+/ Fin: A = B = MCD
+END,    LAC          / AC = 0
+        SUM A        / AC = MCD
+        TAR          / Mostrar AC en la pizarra luminosa
+        ALT          / Alto del programa
+/ Subrutina: Invertir signo mediante complemento a dos
+/ Entrada: AC = numero
+/ Salida: AC = -numero (complemento a dos)
+NEG,    0
+        CAC          / AC = ~AC
+        IAC          / AC = ~AC + 1
+        VEA I NEG    / Retorno (direccion guardada por VAS)
+$                    / fin de listado
