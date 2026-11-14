@@ -1,0 +1,40 @@
+	LEAL
+	CALCULO DE UNA INTEGRAL POR LA FORMA DE SIMPSON
+	ENT N I
+	FLO A B C H S
+	REF (3)
+; --- Lectura de datos ---
+	LEC N											; Número de intervalos
+	LEC A											; Extremo inferior
+	LEC B											; Extremo superior
+; --- Cálculo del paso H = (B - A) / N ---
+	N NOR = H										; Convierte N a flotante
+	B - A / H = H									; H = (B - A) / N
+; --- Primera evaluación de la función en A ---
+	VAS (1) A, C									; C = f(A)
+	0 = I											; Contador de intervalos recorridos
+	C = S											; S = f(A)  (acumulador de la suma)
+; --- Bucle principal de Simpson ---
+(3)	A + H = A										; Avanza al siguiente punto
+	I + 1 = I										; I++
+	VAS (1) A, C									; C = f(A)
+	C : 4 + S = S									; S += 4:f(A)
+	I - N + 1 ? SSC (2)								; Si I = N-1, salta a la última iteración
+	A + H = A
+	I + 1 = I
+	VAS (1) A, C
+	C : 2 + S = S									; S += 2:f(A)
+	VEA (3)											; Repite
+; --- Tramo final de la integral ---
+(2)	A + H = A
+	VAS (1) A, C
+	C + S : H / 6 = S								; S = (C + S) : H / 6
+	PER S
+	ALT
+; --- Subrutina de la función a integrar: f(A) ---
+; f(A) = (A:A - 4:A) RAC  /  (1.0 / A) ACT
+(1)	CRU A											; Recibe A como entrada
+	A : A - 4 : A RAC = C							; C = sqrt(A:A - 4:A)
+	1.0 / A ACT : C = C								; C = C : atan(1/A)
+	FRU (1) C										; Devuelve C como salida
+	FIN

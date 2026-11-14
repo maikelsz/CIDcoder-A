@@ -1,0 +1,28 @@
+LEAL
+HALLAR AREA
+ENT
+FLO A B C D
+REF (1)
+TIT AREA DE UN POLIGONO
+lin
+; Lectura de cuatro valores
+TIT A?
+LEC A
+TIT B?
+LEC B
+TIT C?
+LEC C
+TIT D?
+LEC D
+; Fórmula: D = B/2 + C:A:D  
+; (evaluación estricta de izquierda a derecha)
+; paso 1: B / 2 → AC = B/2
+; paso 2: AC + C → AC = B/2 + C
+; paso 3: AC : A → AC = (B/2 + C) : A
+; paso 4: AC : D → AC = (B/2 + C) : A : D
+; destino: D
+B / 2 + C : A : D = D
+TIT AREA:
+LIN
+PER D	; Imprime el resultado
+FIN

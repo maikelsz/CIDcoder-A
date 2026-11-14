@@ -1,0 +1,80 @@
+; ================================================================
+; CONTAR PALABRAS
+;
+; Lee una línea y cuenta cuántas palabras contiene.
+; Una "palabra" es una secuencia de 1+ caracteres no-espacio.
+;
+; Ejemplos:
+; TEXTO: HOLA MUNDO     -> PALABRAS: 2
+; TEXTO: A B C D        -> PALABRAS: 4
+; TEXTO: (espacios)     -> PALABRAS: 0
+; TEXTO: UNO            -> PALABRAS: 1
+;
+; *** LIMITACIÓN DEL COMPILADOR ***
+; A(I) en un char array lee SIEMPRE 2 palabras de memoria
+; (2 caracteres), aunque LCA/PCA usen 1 palabra por carácter.
+; Este programa aprovecha ese comportamiento: cada A(I)
+; procesa 2 caracteres (low + high) por iteración.
+;
+; Verificación rápida: al arrancar, "HOLA" debe dar
+; A(0)=98324 (chars 'O','H') y A(1)=12306 (chars 'A','L').
+;
+; COBERTURA PARA EL MANUAL:
+; - LCA / PCA para leer/imprimir strings opacos
+; - Extracción de chars: low= A(I)-((A(I)/4096):4096)
+; high= A(I)/4096
+; - Escaneo hasta terminador (A(I)=0 o high=0)
+; - Flag booleano (F=1 dentro de palabra, F=0 fuera)
+; - Módulo emulado (división truncada : 4096)
+; ================================================================
+
+	LEAL
+	TITULO CONTAR
+	ENT A(30) I N C T U W F
+	FLO
+	REF (9)
+
+	TIT TEXTO:
+	LCA A
+
+; ---- N = cuántos pares (palabras empaquetadas) hay ----
+	0 = N
+(1)	A(N) ? SSC (2)
+	N + 1 = N
+	VEA (1)
+
+; ---- Escanear pares, procesar 2 chars cada uno ----
+	0 = W					; contador de palabras
+	0 = F					; 0=fuera de palabra, 1=dentro
+	0 = I
+(2)	I - N ? SNN (7)			; si I >= N, terminar
+; --- Extraer low y high ---
+	A(I) = C				; C = par completo (24-bit)
+	C / 4096 = T			; T = high
+	T : 4096 = U			; U = high : 4096
+	C - U = C				; C = low
+; --- Procesar low ---
+	C ? SSC (7)				; low=0 → terminador, fin
+	C - 4 ? SNC (8)			; si NO es espacio, procesar
+	0 = F					; es espacio
+	VEA (3)
+(8)	F ? SNC (3)				; ya dentro de palabra
+	1 = F
+	W + 1 = W				; nueva palabra
+(3)							; --- Procesar high ---
+	T ? SSC (6)				; high=0 → terminador, fin
+	T - 4 ? SNC (9)			; si NO es espacio, procesar
+	0 = F
+	VEA (6)
+(9)	F ? SNC (6)
+	1 = F
+	W + 1 = W
+(6)	I + 1 = I
+	VEA (2)
+
+; ---- Salida ----
+(7)	TIT PALABRAS:
+	ESP 1
+	PER W
+	LIN
+	FIN

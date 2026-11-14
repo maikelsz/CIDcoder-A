@@ -1,0 +1,39 @@
+	LEAL
+	SALUDO CON ESTRELLAS
+	ENT I N C D U(50) A(50)
+	FLO
+	REF (5)
+; prompt + leer nombre en U
+	TIT WHAT IS YOUR NAME:
+	LCA U
+; imprimir "Hello "; U
+	TIT HELLO
+	PCA U
+	LIN
+; prompt + leer N
+(1)	TIT HOW MANY STARS DO YOU WANT:
+	LEC N
+; S = "X" × N (transformado: imprimir N asteriscos)
+	1 = I
+(2)	CIC
+		TIT X
+	REP (2) I, 1, N
+	LIN
+; prompt + leer respuesta en A$
+(3)	TIT DO YOU WANT MORE STARS?
+	LCA A
+; C = A(0) mod 32 = código Murray de 5 bits del primer carácter
+; (ignora el bit de modo FIGS y los bits altos que pueda haber en A[1])
+	A(0) / 32 = D
+	D : 32 = D
+	A(0) - D = C
+; si vacío (C == 0) → repetir prompt
+	C ? SSC (3)
+; si 'Y' (Murray = 0o25 = 21) → volver a "HOW MANY STARS"
+	C - 21 = C
+	C ? SSC (1)
+; PRINT "Goodbye "; U$
+	TIT GOODBYE
+	PCA U
+	LIN
+	FIN						; END

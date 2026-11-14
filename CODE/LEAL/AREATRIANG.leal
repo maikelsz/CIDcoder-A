@@ -1,0 +1,18 @@
+LEAL
+HALLAR EL AREA
+ENT
+FLO A B H
+REF (1)
+; --- Lectura de hipotenusa A y ángulo B ---
+LEC A
+LEC B
+; --- Cálculo de catetos ---
+B SEN : A = H				; H = sen(B) : A
+B COS : A = B				; B = cos(B) : A
+; --- Área: H : B / 2 ---
+H : B / 2 = B
+; --- Corrección por aproximación de π ---
+; B += H : H : 3.1416 / 8
+H : H : 3.1416 / 8 + B = B
+PER B
+FIN

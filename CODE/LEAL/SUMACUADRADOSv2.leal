@@ -1,0 +1,21 @@
+	LEAL
+	SUMA DE CUADRADOS DE 5 NUMEROS (LECTURA CON CICLO TIPO 2)
+	ENT I
+	FLO X(5)
+	REF (2)
+	TIT SUMA DE CUADRADOS DE 5 NUMEROS
+	LIN
+; --- Lectura usando ciclo tipo 2 ---
+	0 = I
+(1)	CIC
+		TIT NUM?
+		LEC X(I)
+	REP (1) I, 1, 5
+; --- Suma de cuadrados ---
+	0.0 = X
+	1 = I
+(2)	CIC
+		X(I) : X(I) + X = X
+	REP (2) I, 1, 5
+	PER X
+	FIN

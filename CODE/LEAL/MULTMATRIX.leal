@@ -1,0 +1,39 @@
+	LEAL
+	MULTIPLICACION DE DOS MATRICES
+	ENT H I J K L M N S 
+	FLO A(250) B(250)
+	REF (5)
+; --- Lectura de dimensiones ---
+	LEC M							; Filas de A
+	LEC N							; Columnas de A / filas de B
+	LEC K							; Columnas de B
+; --- H = M : N  (total de elementos de A) ---
+	N : M = H
+; --- Lectura de la matriz A por filas ---
+	1 = I
+(1)	CIC
+		LEC A(I)
+	REP (1) I, 1'H					; Recorre I desde 1 hasta H
+; --- H = M : K  (total de elementos de B) ---
+	M : K = H
+; --- Lectura de la matriz B por filas ---
+	1 = I
+(2)	CIC
+		LEC B(I)
+	REP (2) I, 1'H
+; --- Triples ciclos anidados: I (filas de A), H (filas de B), J (columnas de B) ---
+	1 = I
+(3)	CIC
+		1 = H
+(4)		CIC
+			0.0 = B					; Acumulador del producto punto
+			0 = J
+(5)			CIC
+				I + J = L			; L = índice de A(L)
+				K : J + H = S		; S = índice de B(S)
+				A(L) : B(S) + B = B	; Acumula el producto
+			REP (5) J, 1'M			; J de 1 a M
+			PER B					; Imprime el elemento (I,H) del producto
+		REP (4) H, 1'K				; H de 1 a K
+	REP (3) I, M' K					; I de 1 a K
+	FIN

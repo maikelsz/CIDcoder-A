@@ -1,0 +1,90 @@
+; ================================================================
+; INTERÉS COMPUESTO
+;
+; $1000 al 5% anual durante 10 años. Muestra el capital al
+; inicio y al final de cada año.
+;
+; Uso:
+;   (sin entrada - RUN directo)
+;
+; Salida esperada (con DIG 5,2):
+;   YEAR 0: 1000.00
+;   YEAR 1: 1050.00
+;   YEAR 2: 1102.50
+;   YEAR 3: 1157.62   <- truncado de 1157.625
+;   YEAR 4: 1215.50
+;   YEAR 5: 1276.27   <- puede variar por precisión 17 bits
+;   YEAR 6: 1340.08
+;   YEAR 7: 1407.08
+;   YEAR 8: 1477.43
+;   YEAR 9: 1551.30
+;   YEAR 10: 1628.86  <- error acumulado respecto a 1628.89
+;
+; Cobertura para el manual LEAL:
+;   - PRIMERA validación de FLO (variables flotantes)
+;   - PRIMERA validación de DIG m,n (formato de salida)
+;   - PRIMERA validación de PER de float
+;   - PRIMERA validación de aritmética float (+, :, asignación)
+;   - Literales float (1000.0, 0.05, 1.0)
+;   - Mezcla de PER int (K) y PER float (P) en el mismo programa
+;   - Bucle que acumula multiplicación float
+;
+; LIMITACIONES DOCUMENTADAS:
+;   - Precisión: 17 bits de mantisa = ~5.1 dígitos decimales.
+;     Después de 10 multiplicaciones, el error acumulado puede
+;     ser ~0.03 en valores de ~1600. Por eso los últimos
+;     decimales pueden diferir del BASIC (que usa más bits).
+;   - PER float añade 3 espacios de trailing (diseño del
+;     compilador, visible antes de LIN).
+;   - Formato diferente al BASIC: aquí "1000.00", allá "1000".
+;   - DIG m,n persiste hasta el siguiente DIG (no por llamada).
+;
+; COSTE DE RUNTIME (importante):
+;   PER de float carga RT_PER_DISPATCH + RT_PER_CORE +
+;   RT_PER_DIG + RT_PER_FLT + RT_PER_INT (~950 w combinadas).
+;   Más RT_LEC_INT no aplica (no hay LEC en este programa).
+;   Más RT_MUL_INT (~250 w), RT_ADDT (~80 w), RT_LIN,
+;   RT_ESP. Total runtime ~1300-1500 w. Con OLA _40 cabe.
+; ================================================================
+
+LEAL
+TITULO INTERES
+FLO P R T
+ENT K
+REF (2)
+
+; ================================================================
+; FASE 1: Setup inicial
+; ================================================================
+1000.0 = P              ; capital inicial (literal float)
+0.05 = R                ; tasa anual (literal float)
+DIG 5, 2                ; formato: 5 enteros, 2 decimales
+
+; ================================================================
+; FASE 2: Mostrar año 0 (antes del bucle)
+; ================================================================
+TIT YEAR 0:
+ESP 1
+PER P
+LIN
+
+; ================================================================
+; FASE 3: Bucle de 10 años
+; ================================================================
+1 = K
+(1) CIC
+    ; ---- P = P : (1 + R) ----
+    1.0 + R = T         ; T = 1 + R
+    T : P = P           ; P = T : P
+
+    ; ---- Mostrar año K ----
+    TIT YEAR
+    ESP 1
+    PER K               ; K es int -> PER int
+    TIT :
+    ESP 1
+    PER P               ; P es float -> PER float
+    LIN
+    REP (1) K, 1, 10
+
+(2) FIN

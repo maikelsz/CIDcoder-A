@@ -1,0 +1,14 @@
+	LEAL
+	SUMA DE CUADRADOS DE 20 NUMEROS
+	ENT I
+	FLO X(20)
+	REF (1)
+; --- Inicialización ---
+	0.0 = X							; X = 0 (acumulador)
+	1 = I
+; --- Ciclo sobre los 20 números ya almacenados ---
+(1)	CIC
+		X(I) : X(I) + X = X			; X = X + X(I):X(I)
+	REP (1) I, 1, 20
+	PER X							; Imprime la suma
+	FIN

@@ -1,0 +1,63 @@
+; ================================================================
+; POLINOMIO CON CIC TIPO 1 (lista de valores)
+;
+; PRIMERA validación de CIC tipo 1.
+;
+; LIMITACIÓN DOCUMENTADA:
+; CIC tipo 1 ejecuta N+1 iteraciones: la primera usa el
+; valor PREVIO de la variable de control, luego los N
+; valores de la lista. Para obtener N iteraciones limpias,
+; inicializar la variable con un centinela (99) y filtrarlo
+; con SSC dentro del cuerpo.
+;
+; Pruebas (A=1, B=2, C=3, D=4):
+; P(0) = 1
+; P(1) = 10
+; P(2) = 49
+; P(3) = 142
+;
+; Salida esperada (4 líneas, sin duplicado):
+; X=0 P=1
+; X=1 P=10
+; X=2 P=49
+; X=3 P=142
+; ================================================================
+
+	LEAL
+	TITULO POLI
+	ENT A B C D X P
+	FLO
+	REF (2)
+
+; Coeficientes
+	1 = A
+	2 = B
+	3 = C
+	4 = D
+
+; Centinela: la primera iteración de CIC tipo 1 usa este
+; valor (99, fuera de rango). La filtramos dentro del cuerpo.
+	99 = X
+
+; ================================================================
+; CIC tipo 1: X recorre [prev=99, 0, 1, 2, 3] → 5 iteraciones
+; La primera (X=99) se descarta con el filtro.
+; ================================================================
+(1)	CIC
+; --- Filtro: saltar la primera iteración (X == 99) ---
+		X - 99 ? SSC (2)	; si X == 99, ir a REP
+; --- Horner: P = D; P = P:X+C; ... ---
+		D = P
+		P : X + C = P
+		P : X + B = P
+		P : X + A = P
+; --- Imprimir ---
+		TIT X=
+		PER X
+		ESP 1
+		TIT P=
+		PER P
+		LIN
+(2)	REP (1) X'0'1'2'3
+
+	FIN

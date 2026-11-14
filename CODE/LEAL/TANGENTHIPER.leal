@@ -1,0 +1,19 @@
+	LEAL
+	HALLAR V
+	ENT
+	FLO D L K F V
+	REF (1)
+; --- Valores iniciales ---
+	30.0 = D
+	270.0 = L
+; --- Ciclo lista: L recorre 270, 275, 280, 285, 290 ---
+(1)	CIC
+		6.3 : D / L = K			; K = (6.3 : D) / L
+		-K EXP = F				; F = exp(-K)
+		K EXP = K				; K = exp(K)
+		K + F = V				; V = exp(K) + exp(-K) (denominador)
+		K - F / V : 1.8 : L = V	; V = (exp(K) - exp(-K)) / V : 1.8 : L
+		PER V
+		D + 1 = D				; Incrementa D
+	REP (1) L, 5, 290			; L de 270 a 290 paso 5
+	FIN

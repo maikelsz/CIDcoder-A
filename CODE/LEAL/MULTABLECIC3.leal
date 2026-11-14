@@ -1,0 +1,52 @@
+; ================================================================
+; TABLA DE MULTIPLICAR CON CIC TIPO 3
+;
+; Imprime 7 x 1, 7 x 3, 7 x 5, 7 x 7, 7 x 9 (multiplicadores
+; impares). Usa CIC tipo 3: incrementa I por 2, 5 veces.
+;
+; Cobertura para el manual LEAL:
+;   - PRIMERA validación de CIC tipo 3
+;   - REP (1) I, 2' 5  ->  I += 2, 5 veces
+;   - Sin iteración extra (a diferencia de tipo 1)
+;   - Contador de iteraciones independiente de I
+;
+; Pruebas:
+;   7 x 1 = 7
+;   7 x 3 = 21
+;   7 x 5 = 35
+;   7 x 7 = 49
+;   7 x 9 = 63
+;
+; Diferencia con CIC tipo 1:
+;   - Tipo 1: REP (1) I'1'3'5'7'9  -> 6 iteraciones (prev + 5)
+;   - Tipo 3: REP (1) I, 2' 5      -> 5 iteraciones (solo 5)
+;
+; El tipo 3 NO tiene la iteración extra del tipo 1. El
+; contador K (interno) cuenta las 5 iteraciones, y I
+; incrementa en 2 cada vez.
+; ================================================================
+
+LEAL
+TITULO TABLA
+ENT I R
+FLO
+REF (1)
+
+; Inicializar I (multiplicador inicial)
+1 = I
+
+; ================================================================
+; CIC tipo 3: I += 2, 5 veces (I = 1, 3, 5, 7, 9)
+; ================================================================
+(1) CIC
+    ; R = 7 : I
+    7 : I = R
+    ; Imprimir "7 x I = R"
+    TIT 7x
+    PER I
+    TIT =
+    PER R
+    LIN
+    REP (1) I, 2' 5         ; tipo 3: incremento 2, 5 veces
+
+FIN

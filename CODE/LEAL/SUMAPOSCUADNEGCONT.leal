@@ -1,0 +1,29 @@
+	LEAL
+	SUM POSITIV,SUM CUAD D NEGAT,CONTADORES
+	ENT I J
+	FLO A B X
+	REF (3)
+; Inicialización de acumuladores
+	0.0 = A									; A: suma de positivos
+	0.0 = B									; B: suma de cuadrados de negativos
+	0 = I									; I: contador de positivos
+	0 = J									; J: contador de negativos
+; Bucle de lectura
+(3)	LEC X									; Lee el siguiente número
+	X ? SSC (1)							; Si X = 0, fin de la lista
+	X ? SSN (2)								; Si X < 0, acumula en B
+; X > 0:
+	X + A = A
+	I + 1 = I
+	VEA (3)
+(2)	X : X + B = B							; Suma de cuadrados de negativos
+	J + 1 = J
+	VEA (3)
+; Salida de resultados
+(1)	PER A
+	PER B
+	PER I
+	PER J
+	I + J = J								; J = total de números leídos
+	PER J
+	FIN

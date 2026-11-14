@@ -1,0 +1,34 @@
+	LEAL
+	SALUDO CON ESTRELLAS
+	ENT I N C D U(50) A(50)
+	FLO
+	REF (5)
+; prompt + leer nombre en U
+	TIT WHAT IS YOUR NAME: 
+	LCA U
+; imprimir "Hello "; U
+	TIT HELLO 
+	PCA U
+	LIN
+; prompt + leer N
+(1)	TIT HOW MANY STARS DO YOU WANT: 
+	LEC N
+; S = "X" × N (transformado: imprimir N asteriscos)
+	1 = I
+(2)	CIC
+		TIT X
+	REP (2) I, 1, N
+	LIN
+; prompt + leer respuesta en A$
+(3)	TIT DO YOU WANT MORE STARS? 
+	LCA A
+; si A vacio entonces ir a 3 (repetir prompt)
+	A(0) ? SSC (3)			; repite pregunta
+; si primer carácter de A = "Y" entonces ir a 1
+	A(0) - 21 = C			; 21 = código Murray de 'Y' en ITA2 (LTRS)
+	C ? SSC (1)
+; PRINT "Goodbye "; U$
+	TIT GOODBYE 
+	PCA U
+	LIN
+	FIN						; END

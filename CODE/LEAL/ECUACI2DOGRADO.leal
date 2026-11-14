@@ -1,0 +1,23 @@
+	LEAL
+	SOL.  ECUACION DE SEGUNDO GRADO
+	ENT
+	FLO A B C D
+	REF (2)
+; --- Lectura de coeficientes ---
+	LEC A
+	LEC B
+	LEC C
+; --- Discriminante: D = B^2 - 4AC ---
+	B : B = D						; D = B^2
+	-4.0 : A : C + D = C			; C = -4AC + D  (C contiene el discriminante)
+; --- Análisis del discriminante ---
+	C ? SSN (1)						; Si C < 0 → no hay solución real, fin
+	C ? SSC (2)						; Si C = 0 → raíz doble
+; --- Raíces complejas (discriminante negativo pero no llegó por C?) ---
+	C(0) RAC = C					; C = sqrt(C)  (raíz del discriminante)
+	-B - C : 0.5 / A = D			; D = (-B - C) : 0.5 / A
+	PER D
+; --- Segunda raíz (a través de (2)) ---
+(2)	-B + C : 0.5 / A = B			; B = (-B + C) : 0.5 / A
+	PER B
+(1)	FIN

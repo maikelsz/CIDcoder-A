@@ -1,0 +1,33 @@
+	LEAL
+	COMBINACIONES DE N ELEMENTOS TOMADOS P A P
+	ENT M N O P Q T
+	FLO A B C
+	REF (2)
+; --- Lectura de N y P ---
+	LEC N
+	LEC P
+; --- Q = N - P ---
+	N - P = Q
+; --- Cálculo de los tres factoriales usando la misma subrutina VAS (1) ---
+	VAS (1) N, N								; N! → N
+	VAS (1) P, P								; P! → P
+	VAS (1) Q, Q								; Q! → Q
+; --- Conversión a flotante (NOR) ---
+	N NOR = A
+	P NOR = B
+	Q NOR = C
+; --- C = A / B / C  (evaluación izquierda a derecha) ---
+	A / B / C = A
+; --- Impresión: PEN extrae la parte entera (PER de FLO imprime las 24 bits crudas) ---
+	A PEN = T
+	PER T										; Imprime el resultado
+	ALT											; Fin del main (la subrutina sigue)
+; --- Subrutina: factorial de M en O ---
+(1)	CRU M										; Entrada: M
+	1 = O										; O = 1
+	1 = T										; T = contador
+(2)	CIC
+		T : O = O								; O = O : T
+	REP (2) T, 1, M								; T de 1 a M
+	FRU (1) O									; Salida: O
+	FIN

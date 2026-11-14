@@ -1,0 +1,21 @@
+LEAL
+EVALUAR F(X)
+ENT
+FLO X Y Z
+REF (1)
+; --- Lectura del valor de X ---
+LEC X
+; --- Cálculo del denominador: Z = X:X (arctan) + 2 ---
+; paso: X : X → AC = X:X
+; paso: ACT  → AC = arctan(X:X)
+; paso: AC + 2 → Z = 2 + arctan(X:X)
+X : X ACT + 2 = Z
+; --- Cálculo del numerador por partes ---
+; Y = cos(X) - Y     (Y inicialmente 0, pero se usa luego)
+X COS = Y
+; Y = (sen(X) / Y) + exp(X)
+X SEN / Y + X EXP = Y
+; Y = (ln(X) RAC + Y) / Z
+X LNE RAC + Y / Z = Y
+PER Y
+FIN

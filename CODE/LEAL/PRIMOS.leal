@@ -1,0 +1,59 @@
+; ================================================================
+; PRIMOS 2..50
+;
+; Imprime los numeros primos entre 2 y 50, uno por linea.
+;
+; Uso:
+;   (sin entrada - RUN directo)
+;
+; Salida esperada (15 primos):
+;   2  3  5  7  11  13  17  19  23  29
+;   31  37  41  43  47
+;   (uno por linea)
+;
+; Cobertura para el manual LEAL:
+;   - Modulo emulado (N - (N/D):D) sin variable R explicita
+;   - Ciclo con dos condiciones de salida (R=0 y D:D>N)
+;   - Flag booleano P (asumir primo, desmentir si hay divisor)
+;   - Multiplicacion D:D como test de limite
+;   - Condiciones SSP y SSC encadenadas
+;   - Primer programa sin entrada del usuario
+;
+; Variables:
+;   N = candidato 2..50
+;   D = divisor candidato 2..sqrt(N)
+;   Q = N/D (cociente)
+;   T = reutilizado: D:D primero, Q:D despues
+;   P = flag (1 = "asumir primo", 0 = "desmentido")
+; ================================================================
+
+LEAL
+TITULO PRIMOS
+ENT N D Q T P
+FLO
+REF (6)
+
+; Cabecera informativa
+TIT PRIMOS DEL 2 AL 50:
+LIN
+
+; ---- N = 2..50 ----
+2 = N
+(1) N - 50 ? SSP (6)        ; si N > 50, terminar
+    1 = P                   ; P = 1 (asumir primo)
+    2 = D                   ; D = 2 (primer divisor)
+(2) D : D = T               ; T = D : D
+    T - N ? SSP (4)         ; si D:D > N, no hay divisor: imprimir
+    N / D = Q               ; Q = N / D (truncado)
+    Q : D = T               ; T = Q : D (N sin resto si divisible)
+    N - T ? SSC (3)         ; si N = Q:D (R=0), no primo
+    D + 1 = D               ; siguiente divisor
+    VEA (2)
+(3) 0 = P                   ; P = 0 (no primo)
+    VEA (5)
+(4) P - 1 ? SNC (5)         ; defensivo: si P != 1, no imprimir
+    PER N
+    LIN
+(5) N + 1 = N
+    VEA (1)
+(6) FIN

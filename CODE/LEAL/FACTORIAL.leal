@@ -1,0 +1,14 @@
+	LEAL
+	TITULO NUEVO PROGRAMA
+	ENT F I N
+	FLO
+	REF (1)
+	1 = I
+	1 = F
+	TIT FACTORIAL DE?
+	LEC N
+(1)	CIC
+		F : I = F
+	REP (1) I, 1, N
+	PER F
+	FIN

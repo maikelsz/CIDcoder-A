@@ -1,0 +1,29 @@
+	LEAL
+	EVAL POLINOMIO EN VALORES ARBITRARIOS POR HORNER
+	ENT N I
+	FLO A(100) D X
+	REF (4)
+; --- Lectura del grado ---
+	TIT CUANTOS COEFICIENTES?
+	LEC N
+	TIT ENTRE LOS N COEFICIENTES
+	LIN
+; --- Lectura de los coeficientes A(0)..A(N) ---
+	0 = I
+(1)	LEC A(I)
+	I + 1 = I
+	I - N - 1 ? SNC (1)									; Repite hasta leer N+1 coeficientes
+; --- Primer valor de X ---
+	-8.5 = X
+; --- Ciclo lista: evalúa el polinomio para X = -8.5, 2, 3.87 ---
+(2)	CIC
+		0.0 = D											; D = 0 (acumulador)
+		0 = I											; I = 0
+(3)		D + A(I) = D									; D = D + A(I)
+		N - I ? SSC (4)									; Si I = N, termina la evaluación
+		D : X = D										; D = D : X
+		I + 1 = I
+		VEA (3)
+(4)		PER D											; Imprime el valor del polinomio
+	REP (2) X'2'3.87									; Repite para cada valor de X
+	FIN

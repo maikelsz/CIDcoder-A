@@ -1,0 +1,78 @@
+; ================================================================
+; ASIGNACIÓN ENCADENADA
+;
+; Valida la sintaxis de asignación encadenada de LEAL:
+; "expr1 = v1 op operand = v2"  →  v1 = expr1; v2 = v1 op operand
+;
+; Cobertura para el manual LEAL:
+; - PRIMERA validación de asignación encadenada
+; - Chained con 2 tramos: "A+B = T : W = V"
+; - Comparación con la versión descompuesta (R1, R2, R3)
+; - Variables intermedias
+;
+; Pruebas (A=2, B=3, C=4):
+; R1 (P) = (2+3):4 - 2 = 18   [descompuesto]
+; R2 (Q) = ((2:3)+4)/2 = 5    [descompuesto]
+; R3 (U) = 2+3+4+2     = 11   [descompuesto]
+; R4 (V) = (2+3):(4-2) = 10   [CHAINED - test]
+;
+; La última línea usa CHAINED:
+; "A + B = T : W = V"  →  T = A+B; V = T:W
+; Si compila y da V=10, chained validado para multiplicación.
+; ================================================================
+
+LEAL
+TITULO CHAINED
+ENT A B C T W P Q U V
+FLO
+REF (1)
+
+; Setup
+2 = A
+3 = B
+4 = C
+
+; ================================================================
+; P = (A+B):C - A = 18   [descompuesto]
+; ================================================================
+A + B = T
+T : C - A = P
+TIT R1=
+PER P
+LIN
+
+; ================================================================
+; Q = ((A:B)+C)/2 = 5   [descompuesto]
+; ================================================================
+A : B = T
+T + C = T
+T / 2 = Q
+TIT R2=
+PER Q
+LIN
+
+; ================================================================
+; U = A+B+C+A = 11   [descompuesto]
+; ================================================================
+A + B = T
+T + C = T
+T + A = U
+TIT R3=
+PER U
+LIN
+
+; ================================================================
+; V = (A+B):(C-A) = 10   [CHAINED - test]
+;
+; Equivale a:
+; T = A+B
+; V = T : W
+; Pero W se calcula antes:
+; ================================================================
+C - A = W
+A + B = T : W = V
+TIT R4=
+PER V
+LIN
+
+FIN

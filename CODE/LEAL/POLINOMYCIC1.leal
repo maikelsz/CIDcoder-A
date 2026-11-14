@@ -1,0 +1,67 @@
+; ================================================================
+; POLINOMIO CON CIC TIPO 1 (lista de valores)
+;
+; Evalúa P(X) = 1 + 2X + 3X^2 + 4X^3 en X = 0, 1, 2, 3
+; usando el método de Horner (3 multiplicaciones por punto).
+;
+; Cobertura para el manual LEAL:
+;   - PRIMERA validación de CIC tipo 1 (lista de valores)
+;   - REP (n) X'v1'v2'v3'v4  ->  X = v1, v2, v3, v4
+;   - Un solo bloque de código reutilizado con 4 valores
+;   - Acumulación de multiplicaciones (Horner)
+;   - Impresión de X e P en cada iteración
+;
+; Pruebas (A=1, B=2, C=3, D=4):
+;   P(0) = 1
+;   P(1) = 1 + 2 + 3 + 4 = 10
+;   P(2) = 1 + 4 + 12 + 32 = 49
+;   P(3) = 1 + 6 + 27 + 108 = 142
+;	SALIDA:
+;	X=0 P=1
+;	X=0 P=1
+;	X=1 P=10
+;	X=2 P=49
+;	X=3 P=142
+;
+; NOTA: la sintaxis REP (1) X'0'1'2'3 usa apóstrofes (tipo 1),
+; NO comas. La coma es tipo 2 (I, incremento, límite).
+;
+; LIMITACIÓN DOCUMENTADA:
+;   - Valores negativos en la lista requieren fijar la
+;     constante en una variable ANTES del ciclo (ver §4.5
+;     del manual, y LEAL.docx pág. 54). No lo probamos aquí
+;     para mantener el programa enfocado en el tipo 1.
+; ================================================================
+
+LEAL
+TITULO POLI
+ENT A B C D X P
+FLO
+REF (1)
+
+; Coeficientes
+1 = A
+2 = B
+3 = C
+4 = D
+
+; ================================================================
+; CICLO TIPO 1: X recorre 0, 1, 2, 3
+; ================================================================
+(1) CIC
+    ; ---- Horner: P = D; P = P:X+C; P = P:X+B; P = P:X+A ----
+    D = P                   ; P = D
+    P : X + C = P           ; P = P:X + C
+    P : X + B = P           ; P = P:X + B
+    P : X + A = P           ; P = P:X + A
+
+    ; ---- Imprimir: "X= <x>  P= <p>" ----
+    TIT X=
+    PER X
+	ESP 1
+    TIT P=
+    PER P
+    LIN
+    REP (1) X'0'1'2'3       ; tipo 1: X = 0, 1, 2, 3
+
+FIN

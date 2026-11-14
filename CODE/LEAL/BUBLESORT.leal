@@ -1,0 +1,79 @@
+; ================================================================
+; BUBBLE SORT - 8 numeros enteros
+;
+; Lee 8 enteros y los ordena de menor a mayor. Muestra el
+; resultado ordenado, uno por linea.
+;
+; Uso:
+; NUM: <v1>          (repite 8 veces)
+; NUM: <v2>
+; ...
+; NUM: <v8>
+; (salen los 8 numeros ordenados, uno por linea)
+;
+; Pruebas:
+; 8 7 6 5 4 3 2 1  ->  1 2 3 4 5 6 7 8
+; 3 1 4 1 5 9 2 6  ->  1 1 2 3 4 5 6 9
+; 1 2 3 4 5 6 7 8  ->  1 2 3 4 5 6 7 8  (ya ordenado)
+;
+; Cobertura para el manual LEAL:
+; - Ciclos anidados (CIC dentro de CIC)
+; - Indice variable en array A(I), A(J), A(K)
+; - Calculo de indice temporal: K = J + 1
+; - Patron swap con variable temporal (asignacion invertida)
+; - Comparacion con SNP (salta si <= 0)
+; - LEC A(I) (primera vez: lectura directa a array)
+; - PER A(I) (impresion directa de elemento)
+;
+; Notas:
+; - A(8) declara A(0)..A(8). Usamos A(1)..A(8) (1-based).
+; - Bucle externo: I = 1..7 (7 pasadas)
+; - Bucle interno: J = 1..(8-I) (comparaciones restantes)
+; - Swap si A(J) > A(K), con K = J+1
+; - Overflow: si los extremos son +-8388607, la resta
+; A(J)-A(K) desborda 24 bits (E:DESB). No aplica con
+; numeros pequenos como los de prueba.
+; ================================================================
+
+	LEAL
+	TITULO BURBUJA
+	ENT A(8) I J K M T
+	FLO
+	REF (5)
+
+; ================================================================
+; FASE 1: Leer los 8 numeros
+; ================================================================
+	1 = I
+(1)	CIC
+		TIT NUM:
+		LEC A(I)
+	REP (1) I, 1, 8
+
+; ================================================================
+; FASE 2: Ordenar (burbuja ascendente)
+; ================================================================
+	1 = I
+(2)	CIC								; bucle externo: I = 1..7
+		8 - I = M					; M = 8 - I (comparaciones de esta pasada)
+		1 = J
+(3)		CIC							; bucle interno: J = 1..M
+			J + 1 = K				; K = J + 1 (siguiente indice)
+			A(J) - A(K) ? SNP (4)	; si A(J) <= A(K), ya esta ordenado
+; --- swap: A(J) <-> A(K) ---
+			A(J) = T				; T <- A(J)      (guarda el actual)
+			A(K) = A(J)				; A(J) <- A(K)   (sube el siguiente)
+			T = A(K)				; A(K) <- T      (baja el actual)
+(4)		REP (3) J, 1, M
+	REP (2) I, 1, 7
+
+; ================================================================
+; FASE 3: Imprimir el arreglo ordenado
+; ================================================================
+	1 = I
+(5)	CIC
+		PER A(I)
+		LIN
+	REP (5) I, 1, 8
+
+	FIN

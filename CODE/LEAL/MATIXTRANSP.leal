@@ -1,0 +1,25 @@
+	LEAL
+	HALLAR LA TRANSPUESTA DE UNA MATRIZ
+	ENT I J M N P
+	FLO A(500)
+	REF (3)
+; --- Lectura de dimensiones ---
+	LEC M								; Filas
+	LEC N								; Columnas
+; --- P = M : N  (total de elementos) ---
+	M : N = P
+; --- Lectura de la matriz A ---
+	1 = I
+(1)	CIC
+		LEC A(I)
+	REP (1) I, 1'P						; Recorre I de 1 a P
+; --- Doble ciclo: J = columnas, I = filas ---
+	1 = J
+(2)	CIC
+		0 = I
+(3)		CIC
+			I + J = P					; P = (I,J) linealizado
+			PER A(P)					; Imprime A(I,J)
+		REP (3) I, N' M					; Recorre I de 1 a M
+	REP (2) J, 1'N						; Recorre J de 1 a N
+	FIN

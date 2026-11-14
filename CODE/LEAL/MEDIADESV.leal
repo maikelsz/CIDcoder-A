@@ -1,0 +1,29 @@
+	LEAL
+	CALCULO DE LA MEDIA Y LA DESVIACION TIPICA
+	ENT I N
+	FLO X(400) A B Y
+	REF (2)
+; --- Lectura del número de elementos ---
+	LEC N
+; --- Lectura y suma de los N elementos ---
+	1 = I
+	0.0 = X										; X acumula la suma
+(1)	CIC
+		LEC X(I)
+		X(I) + X = X							; X += X(I)
+	REP (1) I, 1, N
+; --- Media: A = X / N ---
+	N NOR = A									; Convierte N a flotante
+	X / A = X									; X = X / N  (media)
+	PER X										; Imprime la media
+; --- Cálculo de la desviación típica ---
+	1 = I
+	0.0 = Y										; Y acumula la suma de (Xi - X)^2
+(2)	CIC
+		X(I) - X = B							; B = Xi - media
+		B : B + Y = Y							; Y += B^2
+	REP (2) I, 1, N
+; --- Raíz cuadrada de (Y / N) ---
+	Y / A RAC = Y								; Y = sqrt(Y / N)
+	PER Y
+	FIN
