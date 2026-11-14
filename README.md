@@ -37,6 +37,10 @@ FIN
 - Variables de una letra A–Z, del tipo declarado con `ENT` (entero 24 bits) o `FLO` (flotante de 2 palabras), con sufijos `A(n)`, `A(I)`, `A(I(n))`.
 - Asignación `expresión = destino` y cadenas `expr = tramo = ... = destino` (evaluación izq→der sin paréntesis); condición `A ? SSx (etiq)`; salto `VEA (etiq)`; etiquetas `(n)`; ciclos `CIC/REP`; subrutinas `VAS/CRU/FRU`; cadenas con buffers `LCA/PCA`.
 
+## Simualcion más completa.
+
+Los archivos `.lst` guardados peden cargarse en el emulador completo de la CID 201-A, disponible en GitHub: [CIDmulator-A](https://github.com/maikelsz/CIDmulatorCID201A)
+
 ## Qué soporta hoy
 
 | Área | Estado |
@@ -47,7 +51,7 @@ FIN
 | Cadenas | Buffers `LCA`/`PCA` y `MDI`/`MID` (desplazamientos), en UNPK y PKD |
 | Subrutinas | `VAS`/`CRU`/`FRU` con asertos permanentes (Ola AUDIT) |
 
-**Pendiente conocido:** salida exponencial «`DIG n`» (`RT_PER_EXP`) y formato decimal del manual (5 dec, redondeo del 6º ≥ 5).
+**Pendiente conocido:** salida exponencial «`DIG n`»  y formato decimal del manual (5 dec, redondeo del 6º ≥ 5).
 
 ## Créditos
 
