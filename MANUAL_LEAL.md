@@ -10,9 +10,11 @@ Durante los años 1970 se desarrolló en tres versiones:
 
 | Versión | Orientación |
 |---|---|
-| **LEAL-A** | Cálculo científico; cintas de papel; sin comentarios; operaciones solo entre enteros o solo entre flotantes. Es un subconjunto de LEAL-B. |
-| **LEAL-B** | Añade comentarios, mezcla de tipos, división entera, asignaciones encadenadas, subrutinas y E/S de caracteres. |
-| **LEAL-F** | CID 300/10; cálculo científico y gestión económica. |
+| **LEAL-A** | Cálculo científico; cintas de papel; operaciones solo entre enteros o solo entre flotantes. Es un subconjunto de LEAL-B. |
+| **LEAL-B** | Añade mezcla de tipos, división entera, asignaciones encadenadas, E/S de caracteres. |
+| **LEAL-F** | Amplia las capacidades de cálculo científico (36 bits) y gestión económica. Última versión.|
+
+El LEAL-F se llegó a utilizar en la minicomputadora CID 300/10. Debido a la gran diferencia en arquitectura con la CID 201-B y no tener que reescribir el compilador los programas se ejecutaban por "runtime".
 
 **CIDcoder-A** compila el dialecto **LEAL-B** para la CID 201-A. LEAL-A sigue siendo válido porque es un subconjunto; las particularidades de la CID 201-B quedan fuera de este emulador.
 
