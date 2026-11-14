@@ -37,9 +37,16 @@ FIN
 - Variables de una letra A–Z, del tipo declarado con `ENT` (entero 24 bits) o `FLO` (flotante de 2 palabras), con sufijos `A(n)`, `A(I)`, `A(I(n))`.
 - Asignación `expresión = destino` y cadenas `expr = tramo = ... = destino` (evaluación izq→der sin paréntesis); condición `A ? SSx (etiq)`; salto `VEA (etiq)`; etiquetas `(n)`; ciclos `CIC/REP`; subrutinas `VAS/CRU/FRU`; cadenas con buffers `LCA/PCA`.
 
-## Simualcion más completa.
+## Simulación más completa.
 
-Los archivos `.lst` guardados peden cargarse en el emulador completo de la CID 201-A, disponible en GitHub: [CIDmulator-A](https://github.com/maikelsz/CIDmulatorCID201A)
+Los archivos `.lst` guardados pueden cargarse en el emulador completo de la CID 201-A, disponible en el repositrio de GitHub [CIDmulator-A](https://github.com/maikelsz/CIDmulatorCID201A) y en GitHubPages:[CIDmulator-A](https://maikelsz.github.io/CIDcoder-A/CIDcoder-A.html)
+Para ello:
+1-"Encender" la computadora.
+2-Cargar el archivo `.lst`.
+3-Poner los 12 interruptores con la dirección de inicio. Los programas compilados desde LEAL el vector de incio esta en la dicección 0000, los que fueorn escritos en LEN1 pueden empezar en cualquier lugar que el autor decidiera, revisar el archivo .lst o el LEN1 fuente.
+4-Apretar CPR. La direccion seleccionada pasara al registro Contador de Programa.
+5-Apretar COM para comenzar.
+Si la computadora esta en ejecución, primero detenerla con ALT, luego seguir los pasos anteriores desde el 2.
 
 ## Qué soporta hoy
 
