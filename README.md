@@ -4,6 +4,8 @@
 
 Este proyecto recupera en software la cadena de herramientas de la minicomputadora CID 201-A (ICID, Cuba, 1971): se escribe un programa en el lenguaje algorítmico **LEAL**, se compila al ensamblador **LEN-1** y se ejecuta en un simulador completo de la máquina — con teletipo RFT T-51, perforador, mapa de memoria y microcódigo. Sin dependencias: se abre directo en el navegador, no hay build.
 
+O ir a este vínculo: <https://maikelsz.github.io/CIDmulatorCID201A/CIDmulatorCID201A.html>
+
 
 <p align="center"><img width="1280" src="https://github.com/maikelsz/CIDcoder-A/blob/main/CIDcoder-A.png" /></p>
 
