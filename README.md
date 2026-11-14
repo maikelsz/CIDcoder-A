@@ -6,7 +6,8 @@ CIDcoder-A recupera en software la cadena de herramientas de la **CID 201-A** (I
 
 <p align="center"><img width="1280" src="https://raw.githubusercontent.com/maikelsz/CIDcoder-A/main/CIDcoder-A.png" alt="Editor, listado LEN-1 y teletipo de la CID 201-A en CIDcoder-A"></p>
 
-**[Abrir la demo en GitHub Pages](https://maikelsz.github.io/CIDcoder-A/CIDcoder-A.html)** · **[Repositorio en GitHub](https://github.com/maikelsz/CIDcoder-A)**
+**[Repositorio en GitHub](https://github.com/maikelsz/CIDcoder-A)**
+**[Abrir en GitHub Pages](https://maikelsz.github.io/CIDcoder-A/CIDcoder-A.html)** 
 
 ## Qué es
 
