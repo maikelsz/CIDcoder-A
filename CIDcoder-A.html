@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CIDcoder-A (0.1.51)</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CIDcoder-A (0.1.52)</title>
 <style>
 :root{--bg:#0d1117;--panel:#171d24;--border:#2c3946;--text:#d7e6d7;--green:#58d878;--amber:#ffb64d;--lg:#e9ffe9;--lw:#fff;--kw:#00469F;--num:#4C4CC8;--cm:#007000;--er:#ff5c5c;--bt:#43505c;--bb:#212a33;--mn:Consolas,"Cascadia Mono","Courier New",monospace;--lh:20px;--tb:#d9cfb8}
 *{box-sizing:border-box}
@@ -66,6 +66,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
         height: var(--lh);
         line-height: var(--lh)
     }
+    #highlight .line .edx-pad{display:inline-block;height:0;width:var(--edx-w,0)}
 .line:nth-child(odd){background:var(--lg)}
 .line:nth-child(even){background:var(--lw)}
 .kw{color:var(--kw);font-weight:700}
@@ -1446,15 +1447,15 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
         /* ═══ COMPILADOR LEAL ═══ */
         const LEALCompiler = (function () {
         const PAGE0_VARS = 0o002, PAGE0_DATA = 0o102, PROG_BASE = 0o4000; // PROG_BASE: base provisional de compilación del cuerpo (se reemite en bodyStart)
-        const RT_PAGES = { RT_GETCHAR: 0o200, RT_IMPRDIG: 0o210, RT_ESP: 0o240, RT_LIN: 0o270, RT_PUTSTR: 0o310, RT_ABS24: 0o400, RT_NEG: 0o440, RT_NEG_FLT: 0o265, RT_PEN: 0o560, RT_EAB: 0o500, RT_LEC_INT: 0o1000, RT_LEC_CORE: 0o1040, RT_LEC_FF: 0o1070, RT_PER_INT: 0o1200, RT_PER_FLT: 0o1700, RT_PER_DISPATCH: 0o1710, RT_PER_CORE: 0o1720, RT_PER_DIG: 0o1730, RT_LCA_UNPACKED: 0o1400, RT_PCA_UNPACKED: 0o1600, RT_LCA_PACKED: 0o1400, RT_PCA_PACKED: 0o1600, RT_MUL_INT: 0o2000, RT_DIV_INT: 0o2200, RT_MDI_UNPACKED: 0o2300, RT_MDI_PACKED: 0o2300, RT_MID_UNPACKED: 0o2400, RT_MID_PACKED: 0o2400, RT_ADD24: 0o2500, RT_SUB24: 0o2520, RT_ADDT: 0o2540, RT_SUBT: 0o2560, RT_SHIFT_R: 0o2555, RT_SHIFT_L: 0o2575, RT_NORM24: 0o2620, RT_UNPACK_FLT: 0o2700, RT_PACK_FLT: 0o2730, RT_ALIGN_FLT: 0o2770, RT_NOR: 0o3000, RT_FPREP: 0o3020, RT_FADD: 0o3040, RT_FSUB: 0o3100, RT_FMUL: 0o3160, RT_FDIV: 0o3200, RT_FAB: 0o540, RT_FRA: 0o640, RT_F2I: 0o3300, RT_FSGN: 0o3320, RT_EDESB: 0o3340, RT_EDIV0: 0o3360, RT_RAC: 0o3400, RT_EXP: 0o3420, RT_EXP_POLY: 0o3440, RT_LNE: 0o3460, RT_LNE_POLY: 0o3500, RT_INV: 0o3520, RT_LOG: 0o3540, RT_SEN: 0o3560, RT_SEN_POLY: 0o3600, RT_COS: 0o3620, RT_COS_POLY: 0o3640, RT_ACT: 0o3660, RT_ACT_POLY: 0o3700};
-            const RT_DEPS = { RT_PER_INT: ["RT_IMPRDIG", "RT_NEG"], RT_PER_FLT: ["RT_UNPACK_FLT", "RT_F2I", "RT_PER_INT", "RT_IMPRDIG", "RT_ADD24", "RT_SHIFT_L", "RT_SHIFT_R"], RT_PER_DISPATCH: ["RT_PER_FLT", "RT_PER_CORE"], RT_PER_CORE: ["RT_UNPACK_FLT", "RT_SHIFT_L", "RT_SHIFT_R", "RT_PER_DIG"], RT_PER_DIG: ["RT_IMPRDIG"], RT_LEC_INT: ["RT_GETCHAR", "RT_NEG"], RT_LEC_CORE: ["RT_GETCHAR"], RT_LEC_FF: ["RT_LEC_CORE", "RT_PACK_FLT", "RT_FDIV", "RT_NEG_FLT", "RT_EDESB"], RT_MUL_INT: ["RT_ABS24", "RT_EDESB", "RT_NEG"], RT_DIV_INT: ["RT_ABS24", "RT_EDIV0", "RT_NEG"], RT_ADDT: ["RT_EDESB"], RT_SUBT: ["RT_EDESB"], RT_EAB: ["RT_NEG"], RT_PEN: ["RT_UNPACK_FLT", "RT_SHIFT_R", "RT_SHIFT_L", "RT_PACK_FLT"], RT_LCA_UNPACKED: ["RT_GETCHAR"], RT_LCA_PACKED: ["RT_GETCHAR"], RT_ALIGN_FLT: ["RT_SHIFT_R"], RT_PACK_FLT: ["RT_NORM24", "RT_EDESB"], RT_EDESB: ["RT_PUTSTR"], RT_EDIV0: ["RT_PUTSTR"], RT_NOR: ["RT_PACK_FLT"], RT_FPREP: ["RT_UNPACK_FLT"], RT_FADD: ["RT_FPREP", "RT_ALIGN_FLT", "RT_ADD24", "RT_SUB24", "RT_PACK_FLT"], RT_FSUB: ["RT_FADD"], RT_F2I: ["RT_UNPACK_FLT", "RT_SHIFT_R", "RT_EDESB"], RT_FMUL: ["RT_FPREP", "RT_MUL_INT", "RT_ADD24", "RT_SHIFT_L", "RT_SHIFT_R", "RT_PACK_FLT"], RT_FDIV: ["RT_FPREP", "RT_ADD24", "RT_NEG", "RT_PACK_FLT", "RT_EDIV0"], RT_FRA: ["RT_PEN", "RT_FSUB"], RT_RAC: ["RT_UNPACK_FLT", "RT_PACK_FLT", "RT_SHIFT_R", "RT_FDIV", "RT_FADD", "RT_FMUL", "RT_EDESB"], RT_EXP: ["RT_EXP_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_UNPACK_FLT", "RT_PACK_FLT"], RT_EXP_POLY: ["RT_FMUL", "RT_FADD"], RT_LNE: ["RT_LNE_POLY", "RT_SUB24", "RT_UNPACK_FLT", "RT_PACK_FLT", "RT_FADD", "RT_FDIV", "RT_FMUL", "RT_NOR", "RT_EDESB"], RT_LNE_POLY: ["RT_FMUL", "RT_FADD"], RT_INV: ["RT_FDIV"], RT_LOG: ["RT_LNE", "RT_FDIV"], RT_SEN: ["RT_SEN_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_NEG_FLT"], RT_SEN_POLY: ["RT_FMUL", "RT_FADD"], RT_COS: ["RT_COS_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_NEG_FLT"], RT_COS_POLY: ["RT_FMUL", "RT_FADD"], RT_ACT: ["RT_ACT_POLY", "RT_FAB", "RT_UNPACK_FLT", "RT_INV", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_FDIV", "RT_RAC", "RT_NEG_FLT"], RT_ACT_POLY: ["RT_FMUL", "RT_FADD"],};
+        const RT_PAGES = { RT_GETCHAR: 0o200, RT_IMPRDIG: 0o210, RT_ESP: 0o240, RT_LIN: 0o270, RT_PUTSTR: 0o310, RT_ABS24: 0o400, RT_NEG: 0o440, RT_NEG_FLT: 0o265, RT_PEN: 0o560, RT_EAB: 0o500, RT_LEC_INT: 0o1000, RT_LEC_CORE: 0o1040, RT_LEC_X10: 0o1100, RT_LEC_FF: 0o1070, RT_PER_INT: 0o1200, RT_PER_FLT: 0o1700, RT_PER_DISPATCH: 0o1710, RT_PER_CORE: 0o1720, RT_PER_DIG: 0o1730, RT_LCA_UNPACKED: 0o1400, RT_PCA_UNPACKED: 0o1600, RT_LCA_PACKED: 0o1400, RT_PCA_PACKED: 0o1600, RT_MUL_INT: 0o2000, RT_DIV_INT: 0o2200, RT_MDI_UNPACKED: 0o2300, RT_MDI_PACKED: 0o2300, RT_MID_UNPACKED: 0o2400, RT_MID_PACKED: 0o2400, RT_ADD24: 0o2500, RT_SUB24: 0o2520, RT_ADDT: 0o2540, RT_SUBT: 0o2560, RT_SHIFT_R: 0o2555, RT_SHIFT_L: 0o2575, RT_NORM24: 0o2620, RT_UNPACK_FLT: 0o2700, RT_PACK_FLT: 0o2730, RT_ALIGN_FLT: 0o2770, RT_NOR: 0o3000, RT_FPREP: 0o3020, RT_FADD: 0o3040, RT_FSUB: 0o3100, RT_FMUL: 0o3160, RT_FDIV: 0o3200, RT_FAB: 0o540, RT_FRA: 0o640, RT_F2I: 0o3300, RT_FSGN: 0o3320, RT_EDESB: 0o3340, RT_EDIV0: 0o3360, RT_RAC: 0o3400, RT_EXP: 0o3420, RT_EXP_POLY: 0o3440, RT_LNE: 0o3460, RT_LNE_POLY: 0o3500, RT_INV: 0o3520, RT_LOG: 0o3540, RT_SEN: 0o3560, RT_SEN_POLY: 0o3600, RT_COS: 0o3620, RT_COS_POLY: 0o3640, RT_ACT: 0o3660, RT_ACT_POLY: 0o3700};
+            const RT_DEPS = { RT_PER_INT: ["RT_IMPRDIG", "RT_NEG"], RT_PER_FLT: ["RT_UNPACK_FLT", "RT_F2I", "RT_PER_INT", "RT_IMPRDIG", "RT_ADD24", "RT_SHIFT_L", "RT_SHIFT_R"], RT_PER_DISPATCH: ["RT_PER_FLT", "RT_PER_CORE"], RT_PER_CORE: ["RT_UNPACK_FLT", "RT_SHIFT_L", "RT_SHIFT_R", "RT_PER_DIG"], RT_PER_DIG: ["RT_IMPRDIG"], RT_LEC_INT: ["RT_GETCHAR", "RT_NEG"], RT_LEC_CORE: ["RT_GETCHAR"], RT_LEC_X10: [], RT_LEC_FF: ["RT_LEC_CORE", "RT_PACK_FLT", "RT_FDIV", "RT_NEG_FLT", "RT_EDESB"], RT_MUL_INT: ["RT_ABS24", "RT_EDESB", "RT_NEG"], RT_DIV_INT: ["RT_ABS24", "RT_EDIV0", "RT_NEG"], RT_ADDT: ["RT_EDESB"], RT_SUBT: ["RT_EDESB"], RT_EAB: ["RT_NEG"], RT_PEN: ["RT_UNPACK_FLT", "RT_SHIFT_R", "RT_SHIFT_L", "RT_PACK_FLT"], RT_LCA_UNPACKED: ["RT_GETCHAR"], RT_LCA_PACKED: ["RT_GETCHAR"], RT_ALIGN_FLT: ["RT_SHIFT_R"], RT_PACK_FLT: ["RT_NORM24", "RT_EDESB"], RT_EDESB: ["RT_PUTSTR"], RT_EDIV0: ["RT_PUTSTR"], RT_NOR: ["RT_PACK_FLT"], RT_FPREP: ["RT_UNPACK_FLT"], RT_FADD: ["RT_FPREP", "RT_ALIGN_FLT", "RT_ADD24", "RT_SUB24", "RT_PACK_FLT"], RT_FSUB: ["RT_FADD"], RT_F2I: ["RT_UNPACK_FLT", "RT_SHIFT_R", "RT_EDESB"], RT_FMUL: ["RT_FPREP", "RT_MUL_INT", "RT_ADD24", "RT_SHIFT_L", "RT_SHIFT_R", "RT_PACK_FLT"], RT_FDIV: ["RT_FPREP", "RT_ADD24", "RT_NEG", "RT_PACK_FLT", "RT_EDIV0"], RT_FRA: ["RT_PEN", "RT_FSUB"], RT_RAC: ["RT_UNPACK_FLT", "RT_PACK_FLT", "RT_SHIFT_R", "RT_FDIV", "RT_FADD", "RT_FMUL", "RT_EDESB"], RT_EXP: ["RT_EXP_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_UNPACK_FLT", "RT_PACK_FLT"], RT_EXP_POLY: ["RT_FMUL", "RT_FADD"], RT_LNE: ["RT_LNE_POLY", "RT_SUB24", "RT_UNPACK_FLT", "RT_PACK_FLT", "RT_FADD", "RT_FDIV", "RT_FMUL", "RT_NOR", "RT_EDESB"], RT_LNE_POLY: ["RT_FMUL", "RT_FADD"], RT_INV: ["RT_FDIV"], RT_LOG: ["RT_LNE", "RT_FDIV"], RT_SEN: ["RT_SEN_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_NEG_FLT"], RT_SEN_POLY: ["RT_FMUL", "RT_FADD"], RT_COS: ["RT_COS_POLY", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_PEN", "RT_F2I", "RT_NEG_FLT"], RT_COS_POLY: ["RT_FMUL", "RT_FADD"], RT_ACT: ["RT_ACT_POLY", "RT_FAB", "RT_UNPACK_FLT", "RT_INV", "RT_FMUL", "RT_FADD", "RT_FSUB", "RT_FDIV", "RT_RAC", "RT_NEG_FLT"], RT_ACT_POLY: ["RT_FMUL", "RT_FADD"],};
         class C {
         constructor() {
             this.intPtrs = {};
             this.intPtrFirstLine = {};
             this.userLabels = new Set();
             this.consts = {};
-            this._nameMap = { RT_GETCHAR: "_emitGetchar", RT_IMPRDIG: "_emitImprdig", RT_PER_INT: "_emitPerInt", RT_PER_FLT: "_emitPerFlt", RT_PER_DISPATCH: "_emitPerDispatch", RT_PER_CORE: "_emitPerCore", RT_PER_DIG: "_emitPerDig", RT_LEC_INT: "_emitLecInt", RT_LEC_CORE: "_emitLecCore", RT_LEC_FF: "_emitLecFf", RT_LIN: "_emitLin", RT_ESP: "_emitEsp", RT_PUTSTR: "_emitPutstr", RT_MUL_INT: "_emitMulInt", RT_DIV_INT: "_emitDivInt", RT_ABS24: "_emitAbs24", RT_NEG: "_emitNeg", RT_EAB: "_emitEab", RT_LCA_UNPACKED: "_emitLcaUnpacked", RT_PCA_UNPACKED: "_emitPcaUnpacked", RT_LCA_PACKED: "_emitLcaPacked", RT_PCA_PACKED: "_emitPcaPacked", RT_MDI_UNPACKED: "_emitMdiUnpacked", RT_MID_UNPACKED: "_emitMidUnpacked", RT_MDI_PACKED: "_emitMdiPacked", RT_MID_PACKED: "_emitMidPacked", RT_ADD24: "_emitAdd24", RT_SUB24: "_emitSub24", RT_ADDT: "_emitAddt", RT_SUBT: "_emitSubt", RT_SHIFT_R: "_emitShiftR", RT_SHIFT_L: "_emitShiftL", RT_NORM24: "_emitNorm24", RT_UNPACK_FLT: "_emitUnpackFlt", RT_PACK_FLT: "_emitPackFlt", RT_ALIGN_FLT: "_emitAlignFlt", RT_NOR: "_emitNor", RT_FPREP: "_emitFprep", RT_FADD: "_emitFadd", RT_FSUB: "_emitFsub", RT_FMUL: "_emitFmul", RT_FDIV: "_emitFdiv", RT_FAB: "_emitFab", RT_NEG_FLT: "_emitNegFlt", RT_PEN: "_emitPen", RT_FRA: "_emitFra", RT_F2I: "_emitF2i", RT_FSGN: "_emitFsgn", RT_EDESB: "_emitEdesb", RT_EDIV0: "_emitEdiv0", RT_RAC: "_emitRac", RT_EXP: "_emitExp", RT_EXP_POLY: "_emitExpPoly", RT_LNE: "_emitLne", RT_LNE_POLY: "_emitLnePoly", RT_INV: "_emitInv", RT_LOG: "_emitLog", RT_SEN: "_emitSen", RT_SEN_POLY: "_emitSenPoly", RT_COS: "_emitCos", RT_COS_POLY: "_emitCosPoly", RT_ACT: "_emitAct", RT_ACT_POLY: "_emitActPoly", }}
+            this._nameMap = { RT_GETCHAR: "_emitGetchar", RT_IMPRDIG: "_emitImprdig", RT_PER_INT: "_emitPerInt", RT_PER_FLT: "_emitPerFlt", RT_PER_DISPATCH: "_emitPerDispatch", RT_PER_CORE: "_emitPerCore", RT_PER_DIG: "_emitPerDig", RT_LEC_INT: "_emitLecInt", RT_LEC_CORE: "_emitLecCore", RT_LEC_X10: "_emitLecX10", RT_LEC_FF: "_emitLecFf", RT_LIN: "_emitLin", RT_ESP: "_emitEsp", RT_PUTSTR: "_emitPutstr", RT_MUL_INT: "_emitMulInt", RT_DIV_INT: "_emitDivInt", RT_ABS24: "_emitAbs24", RT_NEG: "_emitNeg", RT_EAB: "_emitEab", RT_LCA_UNPACKED: "_emitLcaUnpacked", RT_PCA_UNPACKED: "_emitPcaUnpacked", RT_LCA_PACKED: "_emitLcaPacked", RT_PCA_PACKED: "_emitPcaPacked", RT_MDI_UNPACKED: "_emitMdiUnpacked", RT_MID_UNPACKED: "_emitMidUnpacked", RT_MDI_PACKED: "_emitMdiPacked", RT_MID_PACKED: "_emitMidPacked", RT_ADD24: "_emitAdd24", RT_SUB24: "_emitSub24", RT_ADDT: "_emitAddt", RT_SUBT: "_emitSubt", RT_SHIFT_R: "_emitShiftR", RT_SHIFT_L: "_emitShiftL", RT_NORM24: "_emitNorm24", RT_UNPACK_FLT: "_emitUnpackFlt", RT_PACK_FLT: "_emitPackFlt", RT_ALIGN_FLT: "_emitAlignFlt", RT_NOR: "_emitNor", RT_FPREP: "_emitFprep", RT_FADD: "_emitFadd", RT_FSUB: "_emitFsub", RT_FMUL: "_emitFmul", RT_FDIV: "_emitFdiv", RT_FAB: "_emitFab", RT_NEG_FLT: "_emitNegFlt", RT_PEN: "_emitPen", RT_FRA: "_emitFra", RT_F2I: "_emitF2i", RT_FSGN: "_emitFsgn", RT_EDESB: "_emitEdesb", RT_EDIV0: "_emitEdiv0", RT_RAC: "_emitRac", RT_EXP: "_emitExp", RT_EXP_POLY: "_emitExpPoly", RT_LNE: "_emitLne", RT_LNE_POLY: "_emitLnePoly", RT_INV: "_emitInv", RT_LOG: "_emitLog", RT_SEN: "_emitSen", RT_SEN_POLY: "_emitSenPoly", RT_COS: "_emitCos", RT_COS_POLY: "_emitCosPoly", RT_ACT: "_emitAct", RT_ACT_POLY: "_emitActPoly", }}
 
             stripC(line) { const i = line.indexOf(";"); return i >= 0 ? line.slice(0, i).replace(/\s+$/, "") : line }
             rawC(line) { const i = line.indexOf(";"); return i >= 0 ? line.slice(i + 1).trim() : "" }
@@ -2975,6 +2976,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 if (this.subInProg !== null) throw new LEALCompileError(`Subrutina ${this.subInProg} sin FRU`, this.curLn);
                 const progBuf = this.lines; this.lines = saved;
                 let ch = true; while (ch) { ch = false; for (const fn of [...this.usedRt]) { const d = RT_DEPS[fn] || []; for (const x of d) { if (!this.usedRt.has(x)) { this.usedRt.add(x); ch = true } } } }
+                if (this.usedRt.has("RT_LEC_INT") && this.usedRt.has("RT_LEC_CORE")) this.usedRt.add("RT_LEC_X10");
                 if (this.usedRt.has("RT_MUL_INT") || this.usedRt.has("RT_DIV_INT")) this.usedRt.add("RT_ABS24");
                 const _place = this._placeRoutines(RT_PAGES);
                 // Layout compacto: rutinas -> tablas -> cuerpo -> arreglos, cada bloque
@@ -3147,6 +3149,14 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 }
                 const _parmWords = Math.max(4, 2 * _maxVasArgs);
                 this.emit("/ === Constantes de uso general (solo las usadas) ===");
+                // Fase 2 (_51.2): constantes de un solo consumidor se emiten al final
+                // de su rutina (en su propia página), igual que TD9..TD13/rac_*.
+                const _movedConsts = new Set();
+                if (u.has("RT_PER_INT")) _movedConsts.add("K_6");
+                if (u.has("RT_PER_DIG")) { _movedConsts.add("K_9"); _movedConsts.add("K_3"); }
+                if (u.has("RT_PER_DISPATCH")) { _movedConsts.add("K_E24"); _movedConsts.add("K_E24V"); }
+                if (u.has("RT_RAC")) _movedConsts.add("K_7760");
+                if (u.has("RT_MDI_PACKED")) _movedConsts.add("K_SPACE_HI");
                 const consts = [
                     ["K_1", 1, "constante 1", (u.has("RT_PER_INT") || u.has("RT_PER_FLT") || u.has("RT_LEC_INT") || u.has("RT_MUL_INT") || u.has("RT_DIV_INT") || u.has("RT_ESP") || u.has("RT_LCA_PACKED") || u.has("RT_PCA_PACKED") || u.has("RT_SHIFT_R") || u.has("RT_SHIFT_L") || u.has("RT_ALIGN_FLT") || u.has("RT_FADD") || u.has("RT_FSUB") || u.has("RT_FMUL") || u.has("RT_FDIV") || u.has("RT_PEN") || u.has("RT_NOR") || u.has("RT_F2I") || u.has("RT_ABS24") || u.has("RT_NEG") || u.has("RT_PER_CORE") || u.has("RT_PER_DIG") || this.usedK1)],
                     ["K_6", 6, "índice máximo de 10^k (10^6; 10^7 no cabe en 24 bits con signo)", u.has("RT_PER_INT")],
@@ -3179,7 +3189,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                     ["K_6000", 0o6000, "PEN -1.0 hi / literal float", (u.has("RT_PEN") || this.consts["K_6000"] !== undefined)],
                     ["K_7760", 0o7760, "−16 en 12 bits (RAC: corrección de k)", u.has("RT_RAC")],
                 ];
-                for (const [n, v, c, cond] of consts) if (cond) this.emit(`${n},     ${this.o4(v)}    / ${c}`);
+                for (const [n, v, c, cond] of consts) if (cond && !_movedConsts.has(n)) this.emit(`${n},     ${this.o4(v)}    / ${c}`);
                 if (u.has("RT_LEC_INT") || u.has("RT_LEC_CORE")) this.emit("K_TABCODDIG, TABCODDIG   / puntero a tabla código Murray → dígito");
                 if (u.has("RT_IMPRDIG")) this.emit("K_TABDIGCOD, TABDIGCOD   / puntero a tabla dígito → código Murray");
                 if (u.has("RT_PER_INT") || u.has("RT_PER_FLT")) this.emit("K_TABPOW10,  TABPOW10    / puntero a tabla de potencias de 10 (24 bits)");
@@ -3243,14 +3253,13 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                     ]) this.emit(`${s}, 0000   / ${c}`);
                 }
                 // Solo el scratch exclusivo sin referencias cruzadas se mueve con su rutina
-                // (TD9..TD13 → RT_FMUL, rac_* → RT_RAC). PF_S0..S2 y TMP se quedan en página 0
-                // porque EVALFX/INTEGRALSIMPSON los referencian desde código inline.
+                // (TD9..TD13 → RT_FMUL, rac_* → RT_RAC, TMP → RT_PUTSTR packed). PF_S0..S2
+                // se quedan en página 0: RT_PER_FLT mide 124 w y solo le quedaría 1 w de margen.
                 if (u.has("RT_PER_FLT")) {
                     this.emit("PF_S0, 0000   / stash de v (palabra baja): per(v) flotante sobrevive a F2I/PER_INT");
                     this.emit("PF_S1, 0000   / stash de v (palabra alta)");
                     this.emit("PF_S2, 0000   / contador de dígitos-fracción del bucle de RT_PER_FLT (nunca en TD0: SHIFT_L/R lo usan como conteo)");
                 }
-                if (this.strPacked && u.has("RT_PUTSTR")) this.emit("TMP, 0000   / temporal de RT_PUTSTR packed (palabra empaquetada)");
                 this.emit("");
                 this.emit("/ === Contadores de ciclo CIC/REP ===");
                 for (let n = 1; n <= this.refMax; n++) if (this.usedCtrs.has(n)) this.emit(`CTR_${n}, 0000   / contador del ciclo CIC (${n})`);
@@ -3274,6 +3283,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 const ptrCm = {
                     "RT_LEC_INT": "leer entero de 24 bits desde el teletipo",
                     "RT_LEC_CORE": "núcleo flotante de LEC: acumula 24 bits con saturación + bandera LECOVF",
+                    "RT_LEC_X10": "acumulador compartido ×10 + dígito de LEC (solo cuando LEC es dual)",
                     "RT_LEC_FF": "LEC thin flotante: limpia LECOVF, núcleo, pack/escala y signo (LECOVF → E:DESB)",
                     "RT_PER_INT": "imprimir entero de 24 bits en el teletipo",
                     "RT_LIN": "nueva línea (CR + LF)", "RT_ESP": "perforar N espacios en blanco",
@@ -3312,7 +3322,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                     "RT_SUBT": "resta in situ T = T - R (24 bits, envoltura)",
                     "RT_PACK_FLT": "empaqueta magnitud TLO:THI + signo TCH + exp TD0 → PARM:PARM+1 (normaliza y redondea; E:DESB si |exp|>31)",
                 };
-                const ptrs = ["RT_LEC_INT", "RT_LEC_CORE", "RT_LEC_FF", "RT_PER_INT", "RT_PER_FLT", "RT_PER_DISPATCH", "RT_PER_CORE", "RT_PER_DIG", "RT_LIN", "RT_ESP", "RT_PUTSTR", "RT_MUL_INT", "RT_DIV_INT", "RT_GETCHAR", "RT_IMPRDIG", "RT_FAB", "RT_NEG_FLT", "RT_PEN", "RT_FRA", "RT_F2I", "RT_FSGN", "RT_EDESB", "RT_EDIV0", ];
+                const ptrs = ["RT_LEC_INT", "RT_LEC_CORE", "RT_LEC_X10", "RT_LEC_FF", "RT_PER_INT", "RT_PER_FLT", "RT_PER_DISPATCH", "RT_PER_CORE", "RT_PER_DIG", "RT_LIN", "RT_ESP", "RT_PUTSTR", "RT_MUL_INT", "RT_DIV_INT", "RT_GETCHAR", "RT_IMPRDIG", "RT_FAB", "RT_NEG_FLT", "RT_PEN", "RT_FRA", "RT_F2I", "RT_FSGN", "RT_EDESB", "RT_EDIV0", ];
                 for (const f of ["INV", "SEN", "COS", "ACT", "LOG", "LNE", "EXP", "RAC", "EAB", "NEG"]) ptrs.push(`RT_${f}`);
                 ptrs.push("RT_EXP_POLY");
                 ptrs.push("RT_LNE_POLY");
@@ -3470,6 +3480,8 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 // retorno limpio → RT_PER_INT queda reutilizable como impresor de la parte entera de un
                 // flotante (impresión sin línea nueva).
                 this.emit("        VEA I RT_PER_INT")
+                // Fase 2: constante local de RT_PER_INT (antes en página 0).
+                this.emit("K_6,     0006    / índice máximo de 10^k (local a RT_PER_INT)")
             }
             _emitPerFlt() {
                 // ===== RT_PER_FLT: per(v) flotante — pipeline entero → punto → fracción =====
@@ -3660,6 +3672,9 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        LAC");                         // contrato de entrada: AC=0
                 this.emit("        VAS I   PTR_RT_PER_FLT");
                 this.emit("        VEA I   RT_PER_DISPATCH");
+                // Fase 2: constantes locales de RT_PER_DISPATCH (antes en página 0).
+                this.emit("K_E24,   0070    / máscara signo+bits 4-3 del exponente float (local)");
+                this.emit("K_E24V,  0030    / valor de E>=24 en la máscara K_E24 (local)");
             }
             _emitPerCore() {
                 // ===== PER flotante carril grande (|v| ≥ 2^23) =====
@@ -3862,6 +3877,9 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        VEA     pcg_k");
                 this.emit("        LAC");
                 this.emit("        VEA I   RT_PER_DIG");
+                // Fase 2: constantes locales de RT_PER_DIG (antes en página 0).
+                this.emit("K_9,     0011    / índice máximo de 10^k en TABPOW10C (local a RT_PER_DIG)");
+                this.emit("K_3,     0003    / 3 palabras por entrada de TABPOW10C (local a RT_PER_DIG)");
             }
             _emitLecInt() {
                 this.emit("RT_LEC_INT,"); 
@@ -3915,6 +3933,10 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
 				this.emit("        VEA     li_dig"); 
 				this.emit("        VEA     li_loop"); 
 				this.emitL("li_dig"); 
+				if (this.usedRt.has("RT_LEC_X10")) {
+					this.emit("        VAS I   PTR_RT_LEC_X10");
+					this.emit("        VEA     li_loop");
+				} else {
 				this.emit("        LAC"); 
 				this.emit("        SUM     TNUM"); 
 				this.emit("        DEL     RLO"); 
@@ -3982,6 +4004,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
 				this.emit("        DEL     TQ"); 
 				this.emitL("li_nc2"); 
 				this.emit("        VEA     li_loop"); 
+				}
 				this.emitL("li_done"); 
 				this.emit("        SUM     TNUM"); 
 				this.emit("        DEL     PARM"); 
@@ -4096,6 +4119,10 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        SUM     TD5")
                 this.emit("        SUM     TFLAG")
                 this.emit("        DEL     TD5")                 // AC=0 tras DEL → cabecera x10 sin LAC
+                if (this.usedRt.has("RT_LEC_X10")) {
+                    this.emit("        VAS I   PTR_RT_LEC_X10")
+                    this.emit("        VEA     lc_loop")
+                } else {
                 // ×10 + dígito (idéntico al acumulador de RT_LEC_INT)
                 this.emit("        SUM     TNUM")
                 this.emit("        DEL     RLO")
@@ -4163,6 +4190,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        DEL     TQ")
                 this.emitL("lc_nc2")
                 this.emit("        VEA     lc_loop")
+                }
                 // SatHandle: llega con AC=TQ-409 >= 0. TFLAG=0 (entera): marca LECOVF y
                 // devuelve el control al bucle (los dígitos restantes se descartan).
                 // TFLAG=1 (fraccional): truncado silencioso, TD5 no cuenta los nuevos.
@@ -4178,6 +4206,80 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        VEA     lc_loop")
                 this.emitL("lc_done")
                 this.emit("        VEA I   RT_LEC_CORE")
+            }
+            _emitLecX10() {
+                // RT_LEC_X10: acumulador compartido ×10 + dígito de LEC.
+                // Entra con AC=0 y TDIG = dígito; opera sobre TNUM:TQ y sale con AC=0.
+                // Solo se emite cuando el programa usa RT_LEC_INT y RT_LEC_CORE.
+                this.emit("RT_LEC_X10,")
+                this.emit("        0000")
+                this.emit("        LAC")
+                this.emit("        SUM     TNUM")
+                this.emit("        DEL     RLO")
+                this.emit("        SUM     TQ")
+                this.emit("        DEL     RHI")
+                this.emit("        LEN")
+                this.emit("        SUM     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     TD1")
+                this.emit("        SUM     RHI")
+                this.emit("        LEN")
+                this.emit("        RI1")
+                this.emit("        SUM     TD1")
+                this.emit("        DEL     RHI")
+                this.emit("        SUM     RLO")
+                this.emit("        DEL     TLO")
+                this.emit("        SUM     RHI")
+                this.emit("        DEL     THI")
+                this.emit("        LEN")
+                this.emit("        SUM     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     TD1")
+                this.emit("        SUM     RHI")
+                this.emit("        LEN")
+                this.emit("        RI1")
+                this.emit("        SUM     TD1")
+                this.emit("        DEL     RHI")
+                this.emit("        LEN")
+                this.emit("        SUM     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     RLO")
+                this.emit("        RI1")
+                this.emit("        DEL     TD1")
+                this.emit("        SUM     RHI")
+                this.emit("        LEN")
+                this.emit("        RI1")
+                this.emit("        SUM     TD1")
+                this.emit("        DEL     RHI")
+                this.emit("        SUM     TLO")
+                this.emit("        SUM     RLO")
+                this.emit("        DEL     TNUM")
+                this.emit("        SEC")
+                this.emit("        VEA     lx_nc1")
+                this.emit("        DEL     TD2")
+                this.emit("        VEA     lx_sb1")
+                this.emitL("lx_nc1")
+                this.emit("        SUM     K_1")
+                this.emit("        DEL     TD2")
+                this.emitL("lx_sb1")
+                this.emit("        SUM     THI")
+                this.emit("        SUM     RHI")
+                this.emit("        SUM     TD2")
+                this.emit("        DEL     TQ")
+                this.emit("        SUM     TNUM")
+                this.emit("        SUM     TDIG")
+                this.emit("        DEL     TNUM")
+                this.emit("        SED")
+                this.emit("        VEA     lx_nc2")
+                this.emit("        SUM     TQ")
+                this.emit("        IAC")
+                this.emit("        DEL     TQ")
+                this.emitL("lx_nc2")
+                this.emit("        VEA I RT_LEC_X10")
             }
             _emitLecFf() {
                 // RT_LEC_FF: thin flotante para solo-float y dual. Entra con AC
@@ -4334,6 +4436,8 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                     this.emit("        IAC");
                     this.emit("        DEL     RT_PUTSTR");
                     this.emit("        VEA I RT_PUTSTR");
+                    // Fase 2: TMP local de RT_PUTSTR packed (antes en página 0).
+                    this.emit("TMP, 0000   / temporal de RT_PUTSTR packed (local)");
                 } else {
                     // ps_lp: caída tras DEL TSTR (AC=0) → sin LAC; cierre: caída tras SAC omitido (char==0, AC=0) → sin LAC
                     this.emit("        SUM I   TSTR");
@@ -4755,6 +4859,8 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        SUM     K_BLK");
                 this.emit("        DEL I   TLO");
                 this.emit("        VEA I   RT_MDI_PACKED");
+                // Fase 2: constante local de RT_MDI_PACKED (antes en página 0).
+                this.emit("K_SPACE_HI, 0400 / código Murray del espacio en high half (local)");
             }
 
             _emitMidPacked() {
@@ -6004,7 +6110,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("        YLO     K_40");
                 this.emit("        CAC IAC");
                 this.emit("        SUM     TD2");
-                this.emit("        SUM     K_7760");
+                this.emit("        SUM     RAC_KM16");
                 this.emit("        DEL     TD2");
                 // Paridad de E (TD0 intacto).
                 this.emit("        SUM     TD0");
@@ -6060,6 +6166,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 this.emit("rac_x1, 0000   / RAC: x original, palabra alta");
                 this.emit("rac_half, 0000   / RAC: 0.5 flotante (palabra baja)");
                 this.emit("rac_half1, 2000  / RAC: 0.5 flotante (palabra alta)");
+                this.emit("RAC_KM16, 7760   / -16 en 12 bits: corrección de k (local a RT_RAC)");
             }
             _emitInv() {
                 // RT_INV: PARM:PARM+1 = x (float) → PARM:PARM+1 = 1/x.
@@ -7670,7 +7777,7 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
                 const le = ebL.get(n) || []; const lc = ["line"];
                 if (le.length > 0) lc.push("line-error");
                 const inner = state.mode.highlight(l, le);
-                h += `<div class="${lc.join(" ")}" data-ln="${n}">${inner}</div>`
+                h += `<div class="${lc.join(" ")}" data-ln="${n}">${inner}<span class="edx-pad"></span></div>`
             });
             DOM.highlight.innerHTML = h;
             DOM.gutter.innerHTML = g;
@@ -7681,7 +7788,22 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
             }
         }
 
-        function sync() { DOM.highlight.scrollTop = DOM.code.scrollTop; DOM.highlight.scrollLeft = DOM.code.scrollLeft; DOM.gutter.scrollTop = DOM.code.scrollTop }
+        let _edSb = { h: -1, v: -1, x: null };
+        function syncEditorMetrics() {
+            const hbar = Math.max(0, DOM.code.offsetHeight - DOM.code.clientHeight);
+            const vbar = Math.max(0, DOM.code.offsetWidth - DOM.code.clientWidth);
+            const xof = DOM.code.scrollWidth > DOM.code.clientWidth;
+            if (hbar !== _edSb.h) {
+                _edSb.h = hbar;
+                DOM.highlight.style.paddingBottom = (8 + hbar) + "px";
+                DOM.gutter.style.paddingBottom = (8 + hbar) + "px";
+            }
+            if (vbar !== _edSb.v || xof !== _edSb.x) {
+                _edSb.v = vbar; _edSb.x = xof;
+                DOM.highlight.style.setProperty("--edx-w", (xof ? vbar : 0) + "px");
+            }
+        }
+        function sync() { syncEditorMetrics(); DOM.highlight.scrollTop = DOM.code.scrollTop; DOM.highlight.scrollLeft = DOM.code.scrollLeft; DOM.gutter.scrollTop = DOM.code.scrollTop }
         function getCC() { const p = DOM.code.selectionStart || 0; const u = DOM.code.value.slice(0, p); const ls = u.split("\n"); return { line: ls.length, col: ls[ls.length - 1].length + 1 } }
         function updCur() { const p = getCC(); DOM.editorStatus.textContent = `Ln ${p.line}, Col ${p.col} | palabras: ${state.wordEstimate}` }
 
@@ -7736,13 +7858,18 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
 
         /* ═══ RENDER LISTADO ═══ */
         function measureLstHead() { if (!DOM.lstGutterSpacer) return; const headEl = document.getElementById("lstHead"); if (headEl && headEl.offsetHeight > 0) DOM.lstGutterSpacer.style.height = headEl.offsetHeight + "px" }
+        function syncLstGutterMetrics() {
+            if (!DOM.lstGutter) return;
+            const hbar = Math.max(0, DOM.listingScroll.offsetHeight - DOM.listingScroll.clientHeight);
+            DOM.lstGutter.style.paddingBottom = hbar + "px";
+        }
         function renderLst(rows) {
             DOM.listingBody.innerHTML = ""; if (DOM.lstGutterInner) DOM.lstGutterInner.innerHTML = ""; if (!rows || !rows.length) { DOM.listingBody.innerHTML = '<div style="padding:8px;color:#444;">Sin listado.</div>'; requestAnimationFrame(measureLstHead); return } const f = document.createDocumentFragment(); const g = DOM.lstGutterInner ? document.createDocumentFragment() : null; let i = 0;
             for (const r of rows) {
                 i++; const rw = document.createElement("div"); rw.className = "lst-row"; const c = r.comment ? ` <span class="src-comment">/ ${esc(r.comment)}</span>` : ""; rw.dataset.abs = r.abs;
                 rw.innerHTML = "<span>" + esc(r.page) + "</span>" + "<span>" + esc(r.rel) + "</span>" + "<span>" + esc(oct(r.abs)) + "</span>" + "<span>" + esc(r.content) + "</span>" + "<span>" + esc(r.source) + c + "</span>"; f.appendChild(rw); if (g) { const ln = document.createElement("div"); ln.className = "ln"; ln.textContent = i; g.appendChild(ln) }
             }
-            DOM.listingBody.appendChild(f); if (g) DOM.lstGutterInner.appendChild(g); requestAnimationFrame(measureLstHead); DOM.listingScroll.scrollTop = 0; if (DOM.lstGutter) DOM.lstGutter.scrollTop = 0
+            DOM.listingBody.appendChild(f); if (g) DOM.lstGutterInner.appendChild(g); requestAnimationFrame(measureLstHead); syncLstGutterMetrics(); DOM.listingScroll.scrollTop = 0; if (DOM.lstGutter) DOM.lstGutter.scrollTop = 0
         }
 
         /* ═══ RENDER LEN GENERADO ═══ */
@@ -8113,6 +8240,38 @@ button.toggle.active{color:#baffd5;background:linear-gradient(180deg,#1f5c37,#0e
             DOM.code.setSelectionRange(pos, pos);
         }
 
+    /* ═══ AYUDA DEL EDITOR (compartida por LEAL y LEN-1) ═══ */
+    function helpEditor(num, extra = "") {
+        return `<h3>${num}. Listado, ejecutor y depuración</h3>
+<h4>Panel LST</h4>
+<table>
+<tr><th>Columna</th><th>Significado</th></tr>
+<tr><td><b>Pág</b></td><td>Página de la palabra (00…37 octal).</td></tr>
+<tr><td><b>Rel</b></td><td>Dirección relativa dentro de la página (000…177).</td></tr>
+<tr><td><b>Abs</b></td><td>Dirección absoluta de 12 bits (0000…7777).</td></tr>
+<tr><td><b>Cont</b></td><td>Contenido de la palabra en octal (instrucción o dato).</td></tr>
+<tr><td><b>Fuente</b></td><td>Línea LEN-1 que la generó y su comentario. Las filas modificadas por el programa se resaltan en ámbar.</td></tr>
+</table>
+<p>La barra de estado del LST muestra el número de palabras ensambladas; <b>Save .lst</b> guarda el listado. Un clic en una fila pone o quita un punto de ruptura en la línea LEN-1 asociada; el gutter izquierdo numera las filas del listado.</p>
+<h4>Ejecutor</h4>
+<table>
+<tr><th>Control</th><th>Acción</th></tr>
+<tr><td><b>▶</b></td><td>Ejecuta o detiene el programa.</td></tr>
+<tr><td><b>CONT / INSTR</b></td><td>Ejecución continua o instrucción a instrucción.</td></tr>
+<tr><td><b>•⇢•</b> (barra)</td><td>Resalta en el LST la instrucción en ejecución.</td></tr>
+<tr><td><b>CP</b></td><td>Contador de programa en octal. Enter salta a la dirección; Esc cancela.</td></tr>
+<tr><td><b>▦</b></td><td>Muestra u oculta el mapa de memoria. Al ocultarlo, el teletipo ocupa todo el espacio y el mapa deja de refrescarse.</td></tr>
+<tr><td><b>⟲</b></td><td>Recarga el programa y reinicia la ejecución desde el punto de entrada.</td></tr>
+<tr><td><b>◀ / ▶</b> (mapa)</td><td>Página anterior / siguiente del mapa.</td></tr>
+<tr><td><b>Ir al CP</b> / <b>Ir a la instr.</b></td><td>Centra el mapa en el CP o en la instrucción en ejecución.</td></tr>
+<tr><td><b>•⇢•</b> (mapa)</td><td>Sigue automáticamente la instrucción en ejecución.</td></tr>
+</table>
+<p>Los registros EN, AC, RM y CP se muestran sobre el teletipo; el ciclo y el estado del teclado (KBD) y del modo ITA2 (LTRS/FIGS) aparecen a la derecha. Los puntos de ruptura detienen la ejecución continua en la dirección asociada; al recompilar se borran, y <b>⊘ BPs</b> los borra todos.</p>
+<div class="helpNote"><b>Teclado del teletipo:</b> con el foco en el papel, escriba normalmente; Enter envía CR. Los caracteres que no existen en ITA2 (5 bits) se avisan y no se envían. Backspace no se usa: el teclado histórico no lo tiene.</div>
+${extra}
+<p>Los botones de la barra superior muestran una ayuda emergente al pasar el ratón.</p>`;
+    }
+
     /* ═══ AYUDA LEN-1 ═══ */
     const HELP_LEN1 = `<h2>Lenguaje LEN-1 — CID 201-A</h2>
 <p>LEN-1 (<i>Lenguaje Ensamblador 1</i>) es el ensamblador de la CID 201-A: una minicomputadora cubana de 12 bits con <b>4096 palabras de memoria</b> organizadas en <b>32 páginas de 128 palabras</b>. La representación natural de valores es <b>octal</b>.</p>
@@ -8433,33 +8592,7 @@ $</pre>
 <tr><td><code>Ctrl+O</code></td><td>Abrir un archivo <code>.len1</code>, <code>.leal</code> o <code>.txt</code>.</td></tr>
 <tr><td><code>F9</code></td><td>Compilar y ensamblar.</td></tr>
 </table>
-<h3>12. Listado, ejecutor y depuración</h3>
-<h4>Panel LST</h4>
-<table>
-<tr><th>Columna</th><th>Significado</th></tr>
-<tr><td><b>Pág</b></td><td>Página de la palabra (00…37 octal).</td></tr>
-<tr><td><b>Rel</b></td><td>Dirección relativa dentro de la página (000…177).</td></tr>
-<tr><td><b>Abs</b></td><td>Dirección absoluta de 12 bits (0000…7777).</td></tr>
-<tr><td><b>Cont</b></td><td>Contenido de la palabra en octal (instrucción o dato).</td></tr>
-<tr><td><b>Fuente</b></td><td>Línea LEN-1 que la generó y su comentario. Las filas modificadas por el programa se resaltan en ámbar.</td></tr>
-</table>
-<p>La barra de estado del LST muestra el número de palabras ensambladas; <b>Save .lst</b> guarda el listado. Un clic en una fila pone o quita un punto de ruptura en la línea LEN-1 asociada; el gutter izquierdo numera las filas del listado.</p>
-<h4>Ejecutor</h4>
-<table>
-<tr><th>Control</th><th>Acción</th></tr>
-<tr><td><b>▶</b></td><td>Ejecuta o detiene el programa.</td></tr>
-<tr><td><b>CONT / INSTR</b></td><td>Ejecución continua o instrucción a instrucción.</td></tr>
-<tr><td><b>•⇢•</b> (barra)</td><td>Resalta en el LST la instrucción en ejecución.</td></tr>
-<tr><td><b>CP</b></td><td>Contador de programa en octal. Enter salta a la dirección; Esc cancela.</td></tr>
-<tr><td><b>▦</b></td><td>Muestra u oculta el mapa de memoria. Al ocultarlo, el teletipo ocupa todo el espacio y el mapa deja de refrescarse.</td></tr>
-<tr><td><b>⟲</b></td><td>Recarga el programa y reinicia la ejecución desde el punto de entrada.</td></tr>
-<tr><td><b>◀ / ▶</b> (mapa)</td><td>Página anterior / siguiente del mapa.</td></tr>
-<tr><td><b>Ir al CP</b> / <b>Ir a la instr.</b></td><td>Centra el mapa en el CP o en la instrucción en ejecución.</td></tr>
-<tr><td><b>•⇢•</b> (mapa)</td><td>Sigue automáticamente la instrucción en ejecución.</td></tr>
-</table>
-<p>Los registros EN, AC, RM y CP se muestran sobre el teletipo; el ciclo y el estado del teclado (KBD) y del modo ITA2 (LTRS/FIGS) aparecen a la derecha. Los puntos de ruptura detienen la ejecución continua en la dirección asociada; al recompilar se borran, y <b>⊘ BPs</b> los borra todos.</p>
-<div class="helpNote"><b>Teclado del teletipo:</b> con el foco en el papel, escriba normalmente; Enter envía CR. Los caracteres que no existen en ITA2 se avisan y no se envían. Backspace no se usa: el teclado histórico no lo tiene.</div>
-<p>Los botones de la barra superior muestran una ayuda emergente al pasar el ratón.</p>`;
+${helpEditor("12", "<p>En modo LEN-1, el gutter del editor también permite poner y quitar puntos de ruptura.</p>")}`;
 
  /* ═══ AYUDA LEAL ═══ */
     const HELP_LEAL = `<h2>Lenguaje LEAL — CID 201-A</h2>
@@ -8717,7 +8850,6 @@ FRU (n) H(6) H(9)</pre>
 <tr><td><code>Ctrl+O</code></td><td>Abrir un archivo <code>.leal</code>, <code>.len1</code> o <code>.txt</code>.</td></tr>
 <tr><td><code>F9</code></td><td>Compilar y ensamblar.</td></tr>
 </table>
-<p>Los botones de la barra superior muestran una ayuda emergente al pasar el ratón.</p>
 
 <h3>12c. Paneles y controles</h3>
 <table>
@@ -8728,12 +8860,11 @@ FRU (n) H(6) H(9)</pre>
 <tr><td><b>⚙ Compile</b> / <code>F9</code></td><td>Compila LEAL y ensambla el LEN-1. Los mensajes aparecen en el editor, en el panel <b>LEN generado</b> y en el <b>LST</b>.</td></tr>
 <tr><td><b>▶ Execute</b></td><td>Compila, carga la memoria y abre el ejecutor.</td></tr>
 <tr><td><b>☰ LST / ⚡ Exec / 🎞 Tape</b></td><td>Muestran u ocultan los paneles de listado, ejecutor y cinta perforada.</td></tr>
-<tr><td><b>Gutter del editor</b></td><td>Un clic en un número de línea pone o quita un punto de ruptura. <b>⊘ BPs</b> borra todos.</td></tr>
+<tr><td><b>Gutter del editor</b></td><td>Numera las líneas del editor. En LEAL, los puntos de ruptura se ponen en las filas del LST o en el panel <b>LEN generado</b>.</td></tr>
 </table>
 <p><b>Panel LEN generado:</b> solo aparece en modo LEAL. Muestra el LEN-1 producido, con líneas y palabras en la barra de estado y en el mensaje <i>«LEN generado: N líneas · M palabras»</i>; M debe coincidir con las palabras del LST. <b>Save .len1</b> guarda el texto generado.</p>
-<p><b>Panel LST:</b> columnas Pág/Rel/Abs/Cont/Fuente y estado con el número de palabras. Los mensajes resumen cuerpo, página 0, punteros y constantes. <b>Save .lst</b> guarda el listado. <b>Panel Cinta:</b> representa la cinta perforada y permite guardar el <code>.rib</code>.</p>
-<p><b>Ejecutor:</b> <b>▶</b> ejecuta o detiene; <b>CONT</b> corre continuo y <b>INSTR</b> ejecuta paso a paso. <b>•⇢•</b> resalta las líneas durante la ejecución continua. El campo <b>CP</b> acepta una dirección octal: Enter salta a ella, Esc cancela. <b>▦</b> muestra u oculta el mapa de memoria (al ocultarlo, el teletipo ocupa todo el espacio y el mapa deja de refrescarse). <b>⟲</b> recarga el programa y reinicia la ejecución. En el mapa, ◀/▶ cambian de página, <b>Ir al CP</b> y <b>Ir a la instr.</b> centran la página, y <b>•⇢•</b> sigue automáticamente la instrucción en ejecución.</p>
-<div class="helpNote"><b>Teclado del teletipo:</b> con el foco en el papel, escriba normalmente; Enter envía CR. Los caracteres que no existen en ITA2 (5 bits) se avisan y no se envían. Backspace no se usa: el teclado histórico no lo tiene.</div>
+<p><b>Panel LST:</b> muestra el listado ensamblado; sus mensajes resumen cuerpo, página 0, punteros y constantes. <b>Save .lst</b> guarda el listado. <b>Panel Cinta:</b> representa la cinta perforada y permite guardar el <code>.rib</code>.</p>
+${helpEditor("12d", '<div class="helpNote"><b>En modo LEAL:</b> el LST y el ejecutor trabajan sobre el LEN-1 generado. Los puntos de ruptura se marcan en las líneas de ese LEN-1 (panel <b>LEN generado</b> o filas del LST).</div>')}
 
 <h3>13. Compilación a LEN-1</h3>
 <p>Dos pasos: compilación LEAL → LEN-1, ensamblado LEN-1 → memoria y listado. Los saltos que no se pueden codificar directamente se resuelven con punteros en página 0 (<code>JPTR_*</code>). El área de parámetros <code>PARM</code> tiene 32 palabras (hasta 16 argumentos por subrutina).</p>
@@ -8973,9 +9104,9 @@ FIN</pre>
 <h2>CIDcoder-A</h2>
 <div class="about-version">Entorno de desarrollo y simulador para la CID 201-A</div>
 <div class="about-row"><span class="about-lbl">Proyecto</span><span class="about-val">CIDcoder-A</span></div>
-<div class="about-row"><span class="about-lbl">Versión</span><span class="about-val">0.1.51</span></div>
+<div class="about-row"><span class="about-lbl">Versión</span><span class="about-val">0.1.52</span></div>
 
-<div class="about-row"><span class="about-lbl">Fecha</span><span class="about-val">13/Noviembre/2026</span></div>
+<div class="about-row"><span class="about-lbl">Fecha</span><span class="about-val">14/Noviembre/2026</span></div>
 <div class="about-row"><span class="about-lbl">Autor</span><span class="about-val">MSZ</span></div>
 <div class="about-row"><span class="about-lbl">Web</span><span class="about-val"><a href="https://tecnohistoriacubana.wordpress.com" target="_blank" rel="noopener noreferrer">Tecno-Historia Cubana</a></span></div>
 <div class="about-row"><span class="about-lbl">GitHub</span><span class="about-val"><a href="https://github.com/maikelsz/CIDcoder-A" target="_blank" rel="noopener noreferrer">https://github.com/maikelsz/CIDcoder-A</a></span></div>
@@ -10236,6 +10367,8 @@ FIN</pre>
             if (showExec) cols.push('minmax(0,1fr)');
             if (infoOpen) cols.push('minmax(0,1fr)');
             DOM.mainEl.style.gridTemplateColumns = cols.join(' ');
+            sync();
+            syncLstGutterMetrics();
         }
 
         function syncPanelUi() {
@@ -10331,7 +10464,7 @@ FIN</pre>
             renderEditor();
         });
         DOM.lenSourceScroll.addEventListener("scroll", () => { DOM.lenGutter.scrollTop = DOM.lenSourceScroll.scrollTop });
-        DOM.listingScroll.addEventListener("scroll", () => { if (DOM.lstGutter) DOM.lstGutter.scrollTop = DOM.listingScroll.scrollTop });
+        DOM.listingScroll.addEventListener("scroll", () => { if (DOM.lstGutter) { syncLstGutterMetrics(); DOM.lstGutter.scrollTop = DOM.listingScroll.scrollTop } });
         window.addEventListener("resize", () => { recomputeLayout(); requestAnimationFrame(measureLstHead) });
         window.addEventListener("beforeunload", e => { const p = []; if (state.modified) p.push("código"); if (state.lstModified) p.push(".lst"); if (state.ribModified) p.push(".rib"); if (p.length) { e.preventDefault(); e.returnValue = "" } });
         setInterval(() => { if (state.dirty) { state.dirty = false; runAna(false) } }, 120);
