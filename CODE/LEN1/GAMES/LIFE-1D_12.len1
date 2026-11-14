@@ -1,0 +1,120 @@
+/ ═════════════════════════════════════════════════════════════
+/ GAMEofLIFE 1 DIMENSION para la CID-201-A
+/ Aplica la Regla 90, en un vector de 12 "celulas"
+/ Puede leer el vector inicial desde una constante en memoria
+/ o desde la configuracion de los 12 interruptores.
+/ Compila en 122 palabras, dentro de una sola pagina
+/ Uso: 
+/ 0-maquina detenida (ALT)
+/ 1-cargar el programa en memoria
+/ 2-poner CP 0000 (interruptores en 0, CPR)
+/ 3-poner en los interruptores el vector inicial
+/ 4-comenzar (COM)
+/ 5-resultado en el teletipo
+/ ═════════════════════════════════════════════════════════════
+
+*0000	/vamos a ponerlo en pagina cero
+
+/ ═════════════════════════════════════════════════════════════
+/ MAIN: inicialización, bucle y alto
+/ ═════════════════════════════════════════════════════════════
+MAIN,        LAC
+/ SUM K_GEN1					/ K_GEN1 compila en la direccion 0122
+             ORI                / vector inicial desde interruptores
+             DEL C0             / AC = 0
+             SUM K_NEG10
+             DEL GENCNT
+LOOP,        VAS PRT_SLOT
+             VAS GEN_SLOT
+             ISC GENCNT
+             VEA LOOP
+HALT,        ALT
+             VEA HALT
+/ ═════════════════════════════════════════════════════════════
+/ GEN: siguiente generación (Regla 90) para 12 celdas
+/ N0 = (C0<<1) XOR (C0>>1) con 0 en los bordes
+/ ═════════════════════════════════════════════════════════════
+GEN_SLOT,    0000
+             LAC
+             SUM C0
+             LEN
+             RI1                / AC = C0<<1
+             DEL N0
+             SUM C0
+             LEN
+             RD1                / AC = C0>>1
+             DEL TR
+             SUM N0
+             YLO TR
+             LEN
+             RI1                / AC = 2*(N0&TR)
+             CAC IAC            / AC = -2*(N0&TR)
+             SUM N0             / AC = N0 - 2*(N0&TR)
+             SUM TR             / AC = N0 XOR TR
+             DEL N0
+             SUM N0
+             DEL C0
+             VEA I GEN_SLOT
+/ ═════════════════════════════════════════════════════════════
+/ PCHR: imprime MSB de PBUF como 'X' o ' ', y lo rota a la izq
+/ ═════════════════════════════════════════════════════════════
+PCHR_SLOT,   0000
+             LAC
+             SUM PBUF
+             SAP
+             VEA PCHR_X
+             LAC
+             SUM K_SP
+             VEA PCHR_GO
+PCHR_X,      LAC
+             SUM K_X
+PCHR_GO,     TAP LIP            / AC = 0
+PCHR_W,      SIP
+             VEA PCHR_W
+             SUM PBUF
+             RI1                / AC = PBUF << 1
+             DEL PBUF           / AC = 0
+             VEA I PCHR_SLOT
+/ ═════════════════════════════════════════════════════════════
+/ PRT: 12 celdas + CR + LF
+/ ═════════════════════════════════════════════════════════════
+PRT_SLOT,    0000
+             LAC
+             SUM C0
+             DEL PBUF
+             SUM K_NEG12
+             DEL PCNT
+PL0,         VAS PCHR_SLOT
+             ISC PCNT
+             VEA PL0
+             SUM K_CR           / AC=0 aquí, queda AC=K_CR
+             TAP LIP
+PW1,         SIP
+             VEA PW1
+             LAC
+             SUM K_LF
+             TAP LIP
+PW2,         SIP
+             VEA PW2
+             VEA I PRT_SLOT
+/ ═════════════════════════════════════════════════════════════
+/ Variables + constantes
+/ ═════════════════════════════════════════════════════════════
+C0,          0000               / estado actual   (12 celdas)
+N0,          0000               / estado siguiente
+TR,          0000               / temporal
+PBUF,        0000               / copia de trabajo para imprimir
+PCNT,        0000               / contador de impresión (-12..0)
+GENCNT,      0000               / contador de generaciones (-10..0)
+/ Constantes
+K_CR,        0010
+K_LF,        0002
+K_SP,        0004
+K_X,         0035
+K_1,         0001
+K_4000,      4000               / máscara bit 11
+K_NEG12,     7764               / -12
+K_NEG10,     7706               / -10 generaciones
+K_GEN1,      7531               / semilla manual (alternativa a ORI)
+
+$

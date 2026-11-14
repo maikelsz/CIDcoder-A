@@ -1,0 +1,60 @@
+/ Wack-A-Mole minimo
+/ Aparece un indicador de letra encendido (el topo) en una de las 8 posiciones.
+/ Es one-hot: se queda fijo hasta que salta el siguiente.
+/ Dispone de ≈0,55 seg para pulsar el dígito de esa posición.
+/ Acierto: el display numérico suma 1 punto y aparece otro topo.
+/ Fallo (dígito equivocado) o tiempo agotado: no suma; aparece otro topo igual.
+/ El puntaje se ve siempre en el display tras cada jugada (TAR).
+/ ALT detiene; ENA reinicia con marcador en 0.
+/ El topo nunca repite posición consecutiva.
+
+/ inicio del programa
+*200
+inic,    LAC
+         ORI          / AC = AC | RI. semilla defini por los interruptores
+         DEL SD
+         LID          / barre tecla residual previa al arranque
+         DEL SC       / puntos = 0 (DEL deja AC=0)
+nuevo,   LAC
+         SUM SD
+         LEN          / EN=0 ANTES de rotar (raíz del bug A/B)
+         RI2          / AC = SD*4
+         SUM SD       / AC = SD*5
+         IAC          / +1
+         DEL SD       / SD = 5*SD+1
+         LAC
+         SUM SD
+         YLO M7       / P = SD & 7
+         DEL P        / AC=0
+         IAC          / 1
+         DEL CT       / CT=1 -> ~4096 vueltas de reaccion (~0,33 s)
+         SUM P        / AC = P
+         TAT          / enciende el topo; AC=0
+reac,    SID          / tecla? salta lo siguiente
+         VEA no       / sin tecla -> cuenta tiempo
+         VEA tecla    / con tecla -> compara
+no,      ISC CT       / CT++; si ==0 salta lo siguiente
+         VEA reac     / sigue esperando
+         VEA muest    / CT==0: timeout = fallo
+tecla,   LID          / debounce: consume la tecla
+         LAC
+         TRA          / AC = d (0-7)
+         CAC
+         IAC          / AC = -d
+         SUM P        / AC = P - d
+         SAC          / d==P: salta lo siguiente (acierto)
+         VEA muest    / d!=P: fallo sin incrementar
+         LAC
+         SUM SC
+         IAC
+         DEL SC       / solo acierto: SC++
+muest,   LAC
+         SUM SC
+         TAR          / muestra puntos en el display numérico
+         VEA nuevo    / siguiente topo
+SC,      0
+SD,      0
+P,       0
+CT,      0
+M7,      0o7
+$

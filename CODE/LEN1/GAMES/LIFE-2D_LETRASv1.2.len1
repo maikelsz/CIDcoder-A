@@ -1,0 +1,716 @@
+/ bootstrap, iniciar el progrma desde 0000
+/ o ir directamente a 0200
+*0000
+               VEA I 0001
+*0001
+               0200
+
+/ ═════ PÁGINA 0: datos, constantes, punteros ═════
+*0002
+C0,            0000
+C1,            0000
+C2,            0000
+C3,            0000
+C4,            0000
+C5,            0000
+C6,            0000
+C7,            0000
+C8,            0000
+C9,            0000
+C10,           0000
+C11,           0000
+C12,           0000
+C13,           0000
+C14,           0000
+C15,           0000
+N0,            0000
+N1,            0000
+N2,            0000
+N3,            0000
+N4,            0000
+N5,            0000
+N6,            0000
+N7,            0000
+N8,            0000
+N9,            0000
+N10,           0000
+N11,           0000
+N12,           0000
+N13,           0000
+N14,           0000
+N15,           0000
+TICK,          0000
+GENCNT,        0000
+
+/ K_GEN: una palabra por celda (0/1). Semilla = blinker vertical
+/ (C1, C5, C9 vivos → evoluciona a blinker horizontal en fila 1)
+K_GEN,
+/ fila1
+               0000
+               0001
+               0000
+               0000
+/ fila2
+               0000
+               0001
+               0000
+               0000
+/ fila3
+               0000
+               0001
+               0000
+               0000
+/ fila4
+               0000
+               0000
+               0000
+               0000
+
+K_0,           0000
+K_1,           0001
+K_2,           0002
+K_3,           0003
+K_4,           0004
+K_5,           0005
+K_6,           0006
+K_7,           0007
+K_8,           0010
+K_9,           0011
+K_10,          0012
+K_11,          0013
+K_12,          0014
+K_13,          0015
+K_14,          0016
+K_15,          0017
+K_TICK,        7740               / -40 refrescos ≈ 184 ms
+K_NEGGEN,      7634               / -100 generaciones
+K_CR,          0010
+K_LF,          0002
+K_GENCOUNT,    0000               / 100 decimal (offset de generación)
+
+P_GEN1,        GEN1_SLOT
+P_GEN2,        GEN2_SLOT
+P_GEN3,        GEN3_SLOT
+P_GEN4,        GEN4_SLOT
+P_DISPLAY,     DISP_SLOT
+
+/ ═════ PÁGINA 1: MAIN, INIT, LOOP, HALT, GEN_SLOT ═════
+/ inicio del programa
+*0200
+MAIN,          LAC
+               SUM K_GEN
+               DEL C0
+               SUM K_GEN+1
+               DEL C1
+               SUM K_GEN+2
+               DEL C2
+               SUM K_GEN+3
+               DEL C3
+               SUM K_GEN+4
+               DEL C4
+               SUM K_GEN+5
+               DEL C5
+               SUM K_GEN+6
+               DEL C6
+               SUM K_GEN+7
+               DEL C7
+               SUM K_GEN+8
+               DEL C8
+               SUM K_GEN+9
+               DEL C9
+               SUM K_GEN+10
+               DEL C10
+               SUM K_GEN+11
+               DEL C11
+               SUM K_GEN+12
+               DEL C12
+               SUM K_GEN+13
+               DEL C13
+               SUM K_GEN+14
+               DEL C14
+               SUM K_GEN+15
+               DEL C15
+
+LOOP,          LAC
+               SUM K_TICK
+               DEL TICK
+               LAC          
+               SUM GENCNT   
+               SUM K_GENCOUNT
+               TAR           
+DLP,           VAS I P_DISPLAY
+               ISC TICK
+               VEA DLP
+               VAS GEN_SLOT
+               ISC GENCNT
+               VEA LOOP
+HALT,          ALT
+               VEA HALT
+
+GEN_SLOT,      0000
+               VAS I P_GEN1
+               VAS I P_GEN2
+               VAS I P_GEN3
+               VAS I P_GEN4
+               LAC
+               SUM N0
+               DEL C0
+               SUM N1
+               DEL C1
+               SUM N2
+               DEL C2
+               SUM N3
+               DEL C3
+               SUM N4
+               DEL C4
+               SUM N5
+               DEL C5
+               SUM N6
+               DEL C6
+               SUM N7
+               DEL C7
+               SUM N8
+               DEL C8
+               SUM N9
+               DEL C9
+               SUM N10
+               DEL C10
+               SUM N11
+               DEL C11
+               SUM N12
+               DEL C12
+               SUM N13
+               DEL C13
+               SUM N14
+               DEL C14
+               SUM N15
+               DEL C15
+               VEA I GEN_SLOT
+
+/ ═════ PÁGINA 2: DISPLAY multiplexado ═════
+*0400
+DISP_SLOT,     0000
+               LAC
+               SUM C0
+               SAD
+               VEA dskip0
+               LAC
+               SUM K_0
+               TAT
+dskip0,        SUM C1
+               SAD
+               VEA dskip1
+               LAC
+               SUM K_1
+               TAT
+dskip1,        SUM C2
+               SAD
+               VEA dskip2
+               LAC
+               SUM K_2
+               TAT
+dskip2,        SUM C3
+               SAD
+               VEA dskip3
+               LAC
+               SUM K_3
+               TAT
+dskip3,        SUM C4
+               SAD
+               VEA dskip4
+               LAC
+               SUM K_4
+               TAT
+dskip4,        SUM C5
+               SAD
+               VEA dskip5
+               LAC
+               SUM K_5
+               TAT
+dskip5,        SUM C6
+               SAD
+               VEA dskip6
+               LAC
+               SUM K_6
+               TAT
+dskip6,        SUM C7
+               SAD
+               VEA dskip7
+               LAC
+               SUM K_7
+               TAT
+dskip7,        SUM C8
+               SAD
+               VEA dskip8
+               LAC
+               SUM K_8
+               TAT
+dskip8,        SUM C9
+               SAD
+               VEA dskip9
+               LAC
+               SUM K_9
+               TAT
+dskip9,        SUM C10
+               SAD
+               VEA dskip10
+               LAC
+               SUM K_10
+               TAT
+dskip10,       SUM C11
+               SAD
+               VEA dskip11
+               LAC
+               SUM K_11
+               TAT
+dskip11,       SUM C12
+               SAD
+               VEA dskip12
+               LAC
+               SUM K_12
+               TAT
+dskip12,       SUM C13
+               SAD
+               VEA dskip13
+               LAC
+               SUM K_13
+               TAT
+dskip13,       SUM C14
+               SAD
+               VEA dskip14
+               LAC
+               SUM K_14
+               TAT
+dskip14,       SUM C15
+               SAD
+               VEA dskip15
+               LAC
+               SUM K_15
+               TAT
+dskip15,       VEA I DISP_SLOT
+
+/ ═════ PÁGINA 3: GEN1 (C0..C4) ═════
+*0600
+GEN1_SLOT,     0000
+/ C0 (nbrs: C1 C4 C5)
+               LAC
+               SUM C1
+               SUM C4
+               SUM C5
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g1c0_chk2
+               VEA g1c0_one
+g1c0_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g1c0_zero
+               LAC
+               SUM C0
+               SAC
+               VEA g1c0_one
+g1c0_zero,     LAC
+               VEA g1c0_store
+g1c0_one,      LAC
+               IAC
+g1c0_store,    DEL N0
+/ C1 (nbrs: C0 C2 C4 C5 C6)
+               LAC
+               SUM C0
+               SUM C2
+               SUM C4
+               SUM C5
+               SUM C6
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g1c1_chk2
+               VEA g1c1_one
+g1c1_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g1c1_zero
+               LAC
+               SUM C1
+               SAC
+               VEA g1c1_one
+g1c1_zero,     LAC
+               VEA g1c1_store
+g1c1_one,      LAC
+               IAC
+g1c1_store,    DEL N1
+/ C2 (nbrs: C1 C3 C5 C6 C7)
+               LAC
+               SUM C1
+               SUM C3
+               SUM C5
+               SUM C6
+               SUM C7
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g1c2_chk2
+               VEA g1c2_one
+g1c2_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g1c2_zero
+               LAC
+               SUM C2
+               SAC
+               VEA g1c2_one
+g1c2_zero,     LAC
+               VEA g1c2_store
+g1c2_one,      LAC
+               IAC
+g1c2_store,    DEL N2
+/ C3 (nbrs: C2 C6 C7)
+               LAC
+               SUM C2
+               SUM C6
+               SUM C7
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g1c3_chk2
+               VEA g1c3_one
+g1c3_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g1c3_zero
+               LAC
+               SUM C3
+               SAC
+               VEA g1c3_one
+g1c3_zero,     LAC
+               VEA g1c3_store
+g1c3_one,      LAC
+               IAC
+g1c3_store,    DEL N3
+/ C4 (nbrs: C0 C1 C5 C8 C9)
+               LAC
+               SUM C0
+               SUM C1
+               SUM C5
+               SUM C8
+               SUM C9
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g1c4_chk2
+               VEA g1c4_one
+g1c4_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g1c4_zero
+               LAC
+               SUM C4
+               SAC
+               VEA g1c4_one
+g1c4_zero,     LAC
+               VEA g1c4_store
+g1c4_one,      LAC
+               IAC
+g1c4_store,    DEL N4
+               VEA I GEN1_SLOT
+
+/ ═════ PÁGINA 4: GEN2 (C5..C8) ═════
+*1000
+GEN2_SLOT,     0000
+/ C5 (nbrs: C0 C1 C2 C4 C6 C8 C9 C10)
+               LAC
+               SUM C0
+               SUM C1
+               SUM C2
+               SUM C4
+               SUM C6
+               SUM C8
+               SUM C9
+               SUM C10
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g2c5_chk2
+               VEA g2c5_one
+g2c5_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g2c5_zero
+               LAC
+               SUM C5
+               SAC
+               VEA g2c5_one
+g2c5_zero,     LAC
+               VEA g2c5_store
+g2c5_one,      LAC
+               IAC
+g2c5_store,    DEL N5
+/ C6 (nbrs: C1 C2 C3 C5 C7 C9 C10 C11)
+               LAC
+               SUM C1
+               SUM C2
+               SUM C3
+               SUM C5
+               SUM C7
+               SUM C9
+               SUM C10
+               SUM C11
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g2c6_chk2
+               VEA g2c6_one
+g2c6_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g2c6_zero
+               LAC
+               SUM C6
+               SAC
+               VEA g2c6_one
+g2c6_zero,     LAC
+               VEA g2c6_store
+g2c6_one,      LAC
+               IAC
+g2c6_store,    DEL N6
+/ C7 (nbrs: C2 C3 C6 C10 C11)
+               LAC
+               SUM C2
+               SUM C3
+               SUM C6
+               SUM C10
+               SUM C11
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g2c7_chk2
+               VEA g2c7_one
+g2c7_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g2c7_zero
+               LAC
+               SUM C7
+               SAC
+               VEA g2c7_one
+g2c7_zero,     LAC
+               VEA g2c7_store
+g2c7_one,      LAC
+               IAC
+g2c7_store,    DEL N7
+/ C8 (nbrs: C4 C5 C9 C12 C13)
+               LAC
+               SUM C4
+               SUM C5
+               SUM C9
+               SUM C12
+               SUM C13
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g2c8_chk2
+               VEA g2c8_one
+g2c8_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g2c8_zero
+               LAC
+               SUM C8
+               SAC
+               VEA g2c8_one
+g2c8_zero,     LAC
+               VEA g2c8_store
+g2c8_one,      LAC
+               IAC
+g2c8_store,    DEL N8
+               VEA I GEN2_SLOT
+
+/ ═════ PÁGINA 5: GEN3 (C9..C12) ═════
+*1200
+GEN3_SLOT,     0000
+/ C9 (nbrs: C4 C5 C6 C8 C10 C12 C13 C14)
+               LAC
+               SUM C4
+               SUM C5
+               SUM C6
+               SUM C8
+               SUM C10
+               SUM C12
+               SUM C13
+               SUM C14
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g3c9_chk2
+               VEA g3c9_one
+g3c9_chk2,     CAC IAC
+               IAC
+               SAC
+               VEA g3c9_zero
+               LAC
+               SUM C9
+               SAC
+               VEA g3c9_one
+g3c9_zero,     LAC
+               VEA g3c9_store
+g3c9_one,      LAC
+               IAC
+g3c9_store,    DEL N9
+/ C10 (nbrs: C5 C6 C7 C9 C11 C13 C14 C15)
+               LAC
+               SUM C5
+               SUM C6
+               SUM C7
+               SUM C9
+               SUM C11
+               SUM C13
+               SUM C14
+               SUM C15
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g3c10_chk2
+               VEA g3c10_one
+g3c10_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g3c10_zero
+               LAC
+               SUM C10
+               SAC
+               VEA g3c10_one
+g3c10_zero,    LAC
+               VEA g3c10_store
+g3c10_one,     LAC
+               IAC
+g3c10_store,   DEL N10
+/ C11 (nbrs: C6 C7 C10 C14 C15)
+               LAC
+               SUM C6
+               SUM C7
+               SUM C10
+               SUM C14
+               SUM C15
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g3c11_chk2
+               VEA g3c11_one
+g3c11_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g3c11_zero
+               LAC
+               SUM C11
+               SAC
+               VEA g3c11_one
+g3c11_zero,    LAC
+               VEA g3c11_store
+g3c11_one,     LAC
+               IAC
+g3c11_store,   DEL N11
+/ C12 (nbrs: C8 C9 C13)
+               LAC
+               SUM C8
+               SUM C9
+               SUM C13
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g3c12_chk2
+               VEA g3c12_one
+g3c12_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g3c12_zero
+               LAC
+               SUM C12
+               SAC
+               VEA g3c12_one
+g3c12_zero,    LAC
+               VEA g3c12_store
+g3c12_one,     LAC
+               IAC
+g3c12_store,   DEL N12
+               VEA I GEN3_SLOT
+
+/ ═════ PÁGINA 6: GEN4 (C13..C15) ═════
+*1400
+GEN4_SLOT,     0000
+/ C13 (nbrs: C8 C9 C10 C12 C14)
+               LAC
+               SUM C8
+               SUM C9
+               SUM C10
+               SUM C12
+               SUM C14
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g4c13_chk2
+               VEA g4c13_one
+g4c13_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g4c13_zero
+               LAC
+               SUM C13
+               SAC
+               VEA g4c13_one
+g4c13_zero,    LAC
+               VEA g4c13_store
+g4c13_one,     LAC
+               IAC
+g4c13_store,   DEL N13
+/ C14 (nbrs: C9 C10 C11 C13 C15)
+               LAC
+               SUM C9
+               SUM C10
+               SUM C11
+               SUM C13
+               SUM C15
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g4c14_chk2
+               VEA g4c14_one
+g4c14_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g4c14_zero
+               LAC
+               SUM C14
+               SAC
+               VEA g4c14_one
+g4c14_zero,    LAC
+               VEA g4c14_store
+g4c14_one,     LAC
+               IAC
+g4c14_store,   DEL N14
+/ C15 (nbrs: C10 C11 C14)
+               LAC
+               SUM C10
+               SUM C11
+               SUM C14
+               CAC IAC
+               SUM K_3
+               SAC
+               VEA g4c15_chk2
+               VEA g4c15_one
+g4c15_chk2,    CAC IAC
+               IAC
+               SAC
+               VEA g4c15_zero
+               LAC
+               SUM C15
+               SAC
+               VEA g4c15_one
+g4c15_zero,    LAC
+               VEA g4c15_store
+g4c15_one,     LAC
+               IAC
+g4c15_store,   DEL N15
+               VEA I GEN4_SLOT
+
+$

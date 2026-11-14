@@ -1,0 +1,92 @@
+*200
+/ ================================================================
+/ WHACK-A-MOLE - CID 201-A (LEN-1). 8 posiciones = digito 0..7.
+/ Topo en LED P (TAT P, one-hot persistente). Reaccion con timeout
+/ (bucle ISC). Entrada: teclado decimal (SID/LID/TRA). Puntos: TAR.
+/
+/ GENERADOR: tabla de permutacion de 16 entradas (pag.5
+/ relativa, *300) indexada por contador IDX2 con wrap &15. NO usa
+/ rotaciones en el estado => no pierde el bit en EN (causa del bug
+/ "solo A y B" del generador por RD1+DEL SD). Acceso a la tabla por
+/ indirecto plano (SUM I / DEL I), igual que el Minibin (Hacia).
+/ La tabla no repite posiciones adyacentes (ni en el wrap), asi el
+/ topo nunca se queda fijo ni alterna dos casillas.
+/ ================================================================
+ini,    LAC                 / AC=0
+        DEL SC              / SCORE=0
+        DEL IDX2            / contador de tabla = 0
+        VEA nuevo
+nuevo,  LAC                 / ---- idx = (idx+1) & 15 ----
+        SUM IDX2
+        IAC
+        YLO M15
+        DEL IDX2
+        LAC                 / ---- SCR = TAB + idx (dir. abs. de tabla) ----
+        SUM IDX2
+        SUM TAB
+        DEL SCR
+        LAC                 / ---- P = tabla[idx]  (indirecto plano) ----
+        SUM I SCR
+        DEL P
+        LAC                 / ---- enciende topo (queda fijo) ----
+        SUM P
+        TAT
+        LAC                 / ---- contador de reaccion ----
+        SUM ONE
+        DEL CT
+reac,   SID                 / tecla? -> salta VEA no
+        VEA no              / no tecla: avanza tiempo
+        VEA tec             / tecla presente
+no,     ISC CT              / CT++ ; ==0 -> salta VEA reac (timeout)
+        VEA reac
+        VEA fallo           / tiempo agotado
+tec,    LID                 / limpia indicador (debounce)
+        LAC
+        TRA                 / AC = digito d (0..7)
+        CAC
+        IAC
+        SUM P               / AC = P - d
+        SAC                 / d==P -> salta VEA fallo (acierto)
+        VEA fallo
+        LAC                 / ---- acierto: SCORE++ ----
+        SUM SC
+        IAC
+        DEL SC
+        LAC
+        SUM SC
+        TAR                 / muestra puntos
+        VEA nuevo
+fallo,  LAC                 / ---- fallo: muestra puntos y siguiente ----
+        SUM SC
+        TAR
+        VEA nuevo
+/ ---- variables (pag.1) ----
+SC,     0
+P,      0
+CT,     0
+SCR,    0
+IDX2,   0
+/ ---- constantes-valor (pag.1) ----
+ONE,    0o1                 / ISC desde 1 -> ~4096 vueltas (~0.33 s a MAX)
+M7,     0o7
+M15,    0o17
+TAB,    0o300               / direccion absoluta de la tabla (forzada por *300)
+/ ---- tabla de permutacion (16 posiciones 0..7, sin repeticion adyacente) ----
+*300
+T0,     3
+        7
+        1
+        5
+        0
+        6
+        2
+        4
+        7
+        2
+        5
+        1
+        6
+        0
+        4
+        6
+$

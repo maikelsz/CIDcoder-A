@@ -1,0 +1,143 @@
+*200
+/ ================================================================
+/ SIMON - CID 201-A (LEN-1). 8 tonos = digito 0..7. Secuencia
+/ creciente en SEC[0..15] (0o300-0o317), gestionada por el .len.
+/ Reproduccion: TAT nota, retardo, TAT 0 (hueco), retardo.
+/ Jugador: repite con teclado decimal (SID/LID/TRA), sin timeout.
+/ Fallo -> TAR(longitud) + ALT. Pseudoaleatorio RD1+IAC &7.
+/ ◙  A  B  C ← teclas 0 1 2 3
+/ D  E  F  G ← teclas 4 5 6 7
+/Fase de observación: la máquina enciende las notas de la secuencia una a una; entre nota y nota mete un destello de ◙ como separador.
+/Fase de repetición: cuando el ◙ queda fijo encendido (“tu turno”), 
+/repita la secuencia pulsando los dígitos en orden. 
+/Sin límite de tiempo para pensar.
+/Si acierta toda la ronda, la secuencia crece una nota y se reproduce de nuevo desde el inicio.
+/Si falla una nota: el nixie muestra la longitud alcanzada y la máquina se detiene (ALT). ENA para otra partida.
+/ ================================================================
+ini,    LAC
+        DEL LN              / LEN=0 (longitud de la secuencia)
+        DEL SD
+        DEL IX
+        VEA ronda
+ronda,  LAC                 / ---- nota = (SD rotada +1) & 7 ----
+        SUM SD
+        LEN           		/ EN=0 ANTES de rotar
+		RI2           		/ AC = 4·SD (+wrap del bit 11)
+		SUM SD        		/ AC = 5·SD
+		IAC           		/ +1
+		DEL SD		
+		LAC		
+		SUM SD		
+		YLO M7        		/ TP = SD & 7
+        DEL TP              / TP = nota 0..7
+        LAC                 / ---- SEC[LN] = TP ----
+        SUM LN
+        SUM S0
+        DEL PT
+        LAC
+        SUM TP
+        DEL I PT
+        LAC                 / ---- LN++ ----
+        SUM LN
+        IAC
+        DEL LN
+        LAC                 / ---- IX=0 (reproducir desde el inicio) ----
+        DEL IX
+rep,    LAC                 / nota = SEC[IX]
+        SUM IX
+        SUM S0
+        DEL PT
+        LAC
+        SUM I PT
+        TAT                 / enciende la nota
+        LAC                 / retardo ON
+        SUM R1
+        DEL CT
+w1,    	ISC CT
+        VEA w1
+        LAC                 / hueco entre notas (TAT 0 = ◙)
+        TAT
+        LAC                 / retardo OFF
+        SUM R2
+        DEL CT
+w2,     ISC CT
+        VEA w2
+        LAC                 / IX++
+        SUM IX
+        IAC
+        DEL IX
+        LAC                 / ---- IX==LN ? fin de reproduccion ----
+        SUM IX
+        CAC
+        IAC
+        SUM LN
+        SAC                 / IX==LN -> salta VEA rep
+        VEA rep             / IX!=LN -> siguiente nota
+        VEA jug             / IX==LN -> fase jugador
+jug,    LAC                 / TAT 0 = "tu turno"
+        TAT
+        LAC
+        DEL IX              / IX=0
+jp,     SID                 / espera tecla (sin timeout: el jugador piensa)
+        VEA jp
+        LID
+        LAC
+        TRA                 / AC = d
+        DEL DG
+        LAC                 / nota = SEC[IX]
+        SUM IX
+        SUM S0
+        DEL PT
+        LAC
+        SUM I PT
+        CAC
+        IAC
+        SUM DG              / AC = nota - d
+        SAC                 / d==nota -> salta VEA over (acierto parcial)
+        VEA over
+        LAC                 / IX++
+        SUM IX
+        IAC
+        DEL IX
+        LAC                 / ---- IX==LN ? ronda completa ----
+        SUM IX
+        CAC
+        IAC
+        SUM LN
+        SAC                 / IX==LN -> salta VEA jp
+        VEA jp              / IX!=LN -> siguiente tecla
+        VEA ronda           / IX==LN -> crece la secuencia
+over,   LAC                 / ---- fallo: muestra longitud y para ----
+        SUM LN
+        TAR
+        ALT
+/ ---- variables (pag.1) ----
+LN,     0
+SD,     0
+IX,     0
+TP,     0
+PT,     0
+CT,     0
+DG,     0
+/ ---- constantes-valor ----
+M7,     0o7
+R1,     0o4000              / retardo nota ~0.33 s a MAX
+R2,     0o6000              / hueco ~0.16 s a MAX
+/ ---- array SEC[0..15] (0o300-0o317) ----
+S0,     0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+        0
+$

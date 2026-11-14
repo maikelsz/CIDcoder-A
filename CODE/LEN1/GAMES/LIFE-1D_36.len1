@@ -1,0 +1,201 @@
+*0000
+             VEA I 0001
+*0001
+             0200                    / entry point (MAIN)
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 0: variables + constantes + punteros + GEN (Regla 90)
+/ ═════════════════════════════════════════════════════════════
+*0002
+C0,          0000                    / estado actual   (36 celdas)
+C1,          0000
+C2,          0000
+N0,          0000                    / estado siguiente
+N1,          0000
+N2,          0000
+TR,          0000                    / temporal
+PBUF,        0000
+PCNT,        0000
+GENCNT,      0000
+/ Constantes
+K_CR,        0010
+K_LF,        0002
+K_SP,        0004
+K_X,         0035
+K_1,         0001
+K_4000,      4000                    / máscara bit 11
+K_NEG12,     7764                    / -12
+K_NEG10,     7766                    / -10 generaciones
+K_GEN1,      7531                    / estado inicial (3 palabras)
+             7725
+             3150
+/ Punteros a slots
+P_PCHR,      PCHR_SLOT
+P_PRINT,     PRT_SLOT
+P_GEN,       GEN_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ GEN: siguiente generación (Regla 90) para 3 palabras
+/ ═════════════════════════════════════════════════════════════
+GEN_SLOT,    0000
+/ --- N0 = ((C0<<1) | C1msb) XOR (C0>>1) ---
+             LAC
+             SUM C1
+             YLO K_4000
+             LEN
+             RD11                     / C1msb → bit 0
+             DEL N0
+             SUM C0
+             LEN
+             RI1                      / C0<<1
+             SUM N0
+             DEL N0                   / N0 = (C0<<1)|C1msb
+             SUM C0
+             LEN
+             RD1                      / C0>>1
+             DEL TR
+             SUM N0
+             YLO TR
+             LEN
+             RI1
+             CAC IAC
+             SUM N0
+             SUM TR
+             DEL N0                   / N0 = XOR
+/ --- N1 = ((C1<<1) | C2msb) XOR ((C1>>1) | (C0lsb<<11)) ---
+             SUM C2
+             YLO K_4000
+             LEN
+             RD11
+             DEL N1
+             SUM C1
+             LEN
+             RI1
+             SUM N1
+             DEL N1
+             SUM C0
+             YLO K_1
+             RI11
+             DEL TR
+             SUM C1
+             LEN
+             RD1
+             SUM TR
+             DEL TR
+             SUM N1
+             YLO TR
+             LEN
+             RI1
+             CAC IAC
+             SUM N1
+             SUM TR
+             DEL N1
+/ --- N2 = (C2<<1) XOR ((C2>>1) | (C1lsb<<11)) ---
+             SUM C2
+             LEN
+             RI1
+             DEL N2
+             SUM C1
+             YLO K_1
+             RI11
+             DEL TR
+             SUM C2
+             LEN
+             RD1
+             SUM TR
+             DEL TR
+             SUM N2
+             YLO TR
+             LEN
+             RI1
+             CAC IAC
+             SUM N2
+             SUM TR
+             DEL N2
+/ --- N → C ---
+             SUM N0
+             DEL C0
+             SUM N1
+             DEL C1
+             SUM N2
+             DEL C2
+             VEA I GEN_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 1: MAIN, LOOP, HALT, PCHR, PRT
+/ ═════════════════════════════════════════════════════════════
+*0200
+MAIN,        LAC
+             SUM K_GEN1
+             DEL C0                   / AC = 0
+             SUM K_GEN1+1             / AC = K_GEN1+1
+             DEL C1                   / AC = 0
+             SUM K_GEN1+2             / AC = K_GEN1+2
+             DEL C2                   / AC = 0
+             SUM K_NEG10
+             DEL GENCNT
+LOOP,        VAS I P_PRINT
+             VAS I P_GEN
+             ISC GENCNT
+             VEA LOOP
+HALT,        ALT
+             VEA HALT
+
+/ ═════════════════════════════════════════════════════════════
+/ PCHR: imprime MSB de PBUF como 'X' o ' ', y lo rota a la izq
+/ ═════════════════════════════════════════════════════════════
+PCHR_SLOT,   0000
+             LAC
+             SUM PBUF
+             SAP
+             VEA PCHR_X
+             LAC
+             SUM K_SP
+             VEA PCHR_GO
+PCHR_X,      LAC
+             SUM K_X
+PCHR_GO,     TAP LIP                  / AC = 0
+PCHR_W,      SIP
+             VEA PCHR_W
+             SUM PBUF                 / AC = 0 + PBUF
+             RI1                      / AC = PBUF << 1
+             DEL PBUF
+             VEA I PCHR_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ PRT: 36 celdas (12 por palabra) + CR + LF
+/ ═════════════════════════════════════════════════════════════
+PRT_SLOT,    0000
+             LAC
+             SUM C0
+             DEL PBUF
+             SUM K_NEG12
+             DEL PCNT
+PL0,         VAS I P_PCHR
+             ISC PCNT
+             VEA PL0
+             SUM C1                   / AC = C1 (AC=0 tras PL0)
+             DEL PBUF
+             SUM K_NEG12
+             DEL PCNT
+PL1,         VAS I P_PCHR
+             ISC PCNT
+             VEA PL1
+             SUM C2
+             DEL PBUF
+             SUM K_NEG12
+             DEL PCNT
+PL2,         VAS I P_PCHR
+             ISC PCNT
+             VEA PL2
+             SUM K_CR                 / AC = K_CR (AC=0 tras PL2)
+             TAP LIP
+PW1,         SIP
+             VEA PW1
+             LAC
+             SUM K_LF
+             TAP LIP
+PW2,         SIP
+             VEA PW2
+             VEA I PRT_SLOT
+
+$

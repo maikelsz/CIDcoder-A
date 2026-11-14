@@ -1,0 +1,661 @@
+*0000
+              VEA I 0001
+*0001
+              0200
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 0: buffers, variables, constantes, punteros
+/ ═════════════════════════════════════════════════════════════
+*0002
+C0,           0000
+C1,           0000
+C2,           0000
+C3,           0000
+C4,           0000
+C5,           0000
+C6,           0000
+C7,           0000
+C8,           0000
+C9,           0000
+C10,          0000
+C11,          0000
+C12,          0000
+C13,          0000
+C14,          0000
+C15,          0000
+N0,           0000
+N1,           0000
+N2,           0000
+N3,           0000
+N4,           0000
+N5,           0000
+N6,           0000
+N7,           0000
+N8,           0000
+N9,           0000
+N10,          0000
+N11,          0000
+N12,          0000
+N13,          0000
+N14,          0000
+N15,          0000
+TICK,         0000
+GENCNT,       0000
+TMP,          0000
+TMP2,         0000
+X_IDX,        0000
+
+/ Semilla: blinker vertical (C1, C5, C9)
+K_GEN,        0000
+              0021
+              0000
+              0000
+              0000
+              0025
+              0000
+              0000
+              0000
+              0031
+              0000
+              0000
+              0000
+              0000
+              0000
+              0000
+
+K_ALIVE_0,    0020
+K_ALIVE_1,    0021
+K_ALIVE_2,    0022
+K_ALIVE_3,    0023
+K_ALIVE_4,    0024
+K_ALIVE_5,    0025
+K_ALIVE_6,    0026
+K_ALIVE_7,    0027
+K_ALIVE_8,    0030
+K_ALIVE_9,    0031
+K_ALIVE_10,   0032
+K_ALIVE_11,   0033
+K_ALIVE_12,   0034
+K_ALIVE_13,   0035
+K_ALIVE_14,   0036
+K_ALIVE_15,   0037
+
+K_0,          0000
+K_1,          0001
+K_2,          0002
+K_3,          0003
+K_20,         0020
+K_CR,         0010
+K_LF,         0002
+K_TICK,       7561
+K_NEGGEN,     7634
+K_CBASE,      C0
+K_NBASE,      N0
+K_ABASE,      K_ALIVE_0
+
+P_GEN_A,      0600
+P_GEN_B,      0700
+P_GEN_C,      1000
+P_GEN_D,      1100
+P_GEN_E,      1200
+P_GEN_F,      1300
+P_DISPLAY,    0400
+P_HANDLE,     0257
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 1: MAIN, LOOP, GEN_SLOT, HANDLE, HALT
+/ ═════════════════════════════════════════════════════════════
+*0200
+MAIN,         LAC
+              SUM K_GEN
+              DEL C0
+              SUM K_GEN+1
+              DEL C1
+              SUM K_GEN+2
+              DEL C2
+              SUM K_GEN+3
+              DEL C3
+              SUM K_GEN+4
+              DEL C4
+              SUM K_GEN+5
+              DEL C5
+              SUM K_GEN+6
+              DEL C6
+              SUM K_GEN+7
+              DEL C7
+              SUM K_GEN+8
+              DEL C8
+              SUM K_GEN+9
+              DEL C9
+              SUM K_GEN+10
+              DEL C10
+              SUM K_GEN+11
+              DEL C11
+              SUM K_GEN+12
+              DEL C12
+              SUM K_GEN+13
+              DEL C13
+              SUM K_GEN+14
+              DEL C14
+              SUM K_GEN+15
+              DEL C15
+              LAC
+              SUM K_NEGGEN
+              DEL GENCNT
+
+LOOP,         LAC
+              SUM K_TICK
+              DEL TICK
+DLP,          VAS I P_DISPLAY
+              ISC TICK
+              VEA DLP
+              VAS GEN_SLOT
+              ISC GENCNT
+              VEA LOOP
+
+HALT,         ALT
+              VEA HALT
+
+GEN_SLOT,     0000
+              VAS I P_GEN_A
+              VAS I P_GEN_B
+              VAS I P_GEN_C
+              VAS I P_GEN_D
+              VAS I P_GEN_E
+              VAS I P_GEN_F
+              SUM N0
+              DEL C0
+              SUM N1
+              DEL C1
+              SUM N2
+              DEL C2
+              SUM N3
+              DEL C3
+              SUM N4
+              DEL C4
+              SUM N5
+              DEL C5
+              SUM N6
+              DEL C6
+              SUM N7
+              DEL C7
+              SUM N8
+              DEL C8
+              SUM N9
+              DEL C9
+              SUM N10
+              DEL C10
+              SUM N11
+              DEL C11
+              SUM N12
+              DEL C12
+              SUM N13
+              DEL C13
+              SUM N14
+              DEL C14
+              SUM N15
+              DEL C15
+              VEA I GEN_SLOT
+
+/ ═════ HANDLE compartido ═════
+/ Entrada: TMP=count, X_IDX=índice. Escribe N[X_IDX].
+HANDLE,       0000
+              LAC
+              SUM TMP
+              CAC IAC
+              SUM K_3
+              SAC
+              VEA H_N3
+              VEA H_V
+H_N3,         CAC IAC
+              IAC
+              SAC
+              VEA H_M
+              LAC
+              SUM K_CBASE
+              SUM X_IDX
+              DEL PTR2
+              SUM I PTR2
+              DEL TMP2
+              LAC
+              SUM K_NBASE
+              SUM X_IDX
+              DEL PTR2
+              LAC
+              SUM TMP2
+              DEL I PTR2
+              VEA I HANDLE
+H_V,          LAC
+              SUM K_ABASE
+              SUM X_IDX
+              DEL PTR2
+              SUM I PTR2
+              DEL TMP2
+              LAC
+              SUM K_NBASE
+              SUM X_IDX
+              DEL PTR2
+              LAC
+              SUM TMP2
+              DEL I PTR2
+              VEA I HANDLE
+H_M,          LAC
+              SUM K_NBASE
+              SUM X_IDX
+              DEL PTR2
+              DEL I PTR2
+              VEA I HANDLE
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 2: DISPLAY multiplexado (5 palabras por celda viva,
+/ 4 por muerta; TAT no necesita LAC porque SUM ya deja
+/ el valor en AC)
+/ ═════════════════════════════════════════════════════════════
+*0400
+DISP_SLOT,    0000
+              LAC
+              SUM C0
+              SAD
+              VEA d0
+              TAT
+d0,           SUM C1
+              SAD
+              VEA d1
+              TAT
+d1,           SUM C2
+              SAD
+              VEA d2
+              TAT
+d2,           SUM C3
+              SAD
+              VEA d3
+              TAT
+d3,           SUM C4
+              SAD
+              VEA d4
+              TAT
+d4,           SUM C5
+              SAD
+              VEA d5
+              TAT
+d5,           SUM C6
+              SAD
+              VEA d6
+              TAT
+d6,           SUM C7
+              SAD
+              VEA d7
+              TAT
+d7,           SUM C8
+              SAD
+              VEA d8
+              TAT
+d8,           SUM C9
+              SAD
+              VEA d9
+              TAT
+d9,           SUM C10
+              SAD
+              VEA d10
+              TAT
+d10,          SUM C11
+              SAD
+              VEA d11
+              TAT
+d11,          SUM C12
+              SAD
+              VEA d12
+              TAT
+d12,          SUM C13
+              SAD
+              VEA d13
+              TAT
+d13,          SUM C14
+              SAD
+              VEA d14
+              TAT
+d14,          SUM C15
+              SAD
+              VEA d15
+              TAT
+d15,          VEA I DISP_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 3: GEN_A (C0, C1, C2) + GEN_B (C3, C4, C5)
+/ ═════════════════════════════════════════════════════════════
+*0600
+GEN_A_SLOT,   0000
+              LAC
+              SUM C1 
+              YLO K_20
+              SUM C4 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C0 
+              YLO K_20
+              SUM C2 
+              YLO K_20
+              SUM C4 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_1
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C1 
+              YLO K_20
+              SUM C3 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C7 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_2
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_A_SLOT
+
+*0700
+GEN_B_SLOT,   0000
+              LAC
+              SUM C2 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C7 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_3
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C0 
+              YLO K_20
+              SUM C1 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C8 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_4
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C0 
+              YLO K_20
+              SUM C1 
+              YLO K_20
+              SUM C2 
+              YLO K_20
+              SUM C4 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C8 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_5
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_B_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 4: GEN_C (C6, C7, C8) + GEN_D (C9, C10)
+/ ═════════════════════════════════════════════════════════════
+*1000
+GEN_C_SLOT,   0000
+              LAC
+              SUM C1 
+              YLO K_20
+              SUM C2 
+              YLO K_20
+              SUM C3 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C7 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C11 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_6
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C2 
+              YLO K_20
+              SUM C3 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C11 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_7
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C4 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C12 
+              YLO K_20
+              SUM C13 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_10
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_C_SLOT
+
+*1100
+GEN_D_SLOT,   0000
+              LAC
+              SUM C4 
+              YLO K_20
+              SUM C5 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C8 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C12 
+              YLO K_20
+              SUM C13 
+              YLO K_20
+              SUM C14 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_11
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C5 
+              YLO K_20
+              SUM C6 
+              YLO K_20
+              SUM C7 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C11 
+              YLO K_20
+              SUM C13 
+              YLO K_20
+              SUM C14 
+              YLO K_20
+              SUM C15 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_12
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_D_SLOT
+
+/ ═════════════════════════════════════════════════════════════
+/ PÁGINA 5: GEN_E (C11, C12, C13) + GEN_F (C14, C15)
+/ ═════════════════════════════════════════════════════════════
+*1200
+GEN_E_SLOT,   0000
+              LAC
+              SUM C6 
+              YLO K_20
+              SUM C7 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C14 
+              YLO K_20
+              SUM C15 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_13
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C8 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C13 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_14
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C8 
+              YLO K_20
+              SUM C9 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C12 
+              YLO K_20
+              SUM C14 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_15
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_E_SLOT
+
+*1300
+GEN_F_SLOT,   0000
+              LAC
+              SUM C9 
+              YLO K_20
+              SUM C10 
+              YLO K_20
+              SUM C11 
+              YLO K_20
+              SUM C13 
+              YLO K_20
+              SUM C15 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_16
+              DEL X_IDX
+              VAS I P_HANDLE
+
+              LAC
+              SUM C10 
+              YLO K_20
+              SUM C11 
+              YLO K_20
+              SUM C14 
+              YLO K_20
+              LEN
+              RD4
+              DEL TMP
+              LAC
+              SUM K_17
+              DEL X_IDX
+              VAS I P_HANDLE
+              VEA I GEN_F_SLOT
+
+$
